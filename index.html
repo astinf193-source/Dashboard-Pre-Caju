@@ -121,6 +121,13 @@
 .location-row .location-value{white-space:nowrap;color:#ffd23f}
 @media(max-width:650px){.location-chart-wrap{grid-template-columns:110px minmax(0,1fr);gap:8px}.location-pie{width:105px}.detail-grid>.data-card{min-height:190px}}
 
+
+/* Distribuir as três fileiras de cartões por toda a altura do painel */
+@media(min-width:1151px){
+ .occurrence-panel{display:flex;flex-direction:column}
+ .occurrence-panel .categories{flex:1;min-height:0;align-content:space-between;grid-auto-rows:minmax(158px,auto);padding-bottom:8px}
+}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
