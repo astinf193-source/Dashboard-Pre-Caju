@@ -139,6 +139,17 @@
 .resource strong{height:23px;min-height:23px;padding:3px 7px;font-size:18px;line-height:17px;box-sizing:border-box}
 .resource span{height:29px;min-height:29px;padding:7px 7px;font-size:11px;line-height:15px;box-sizing:border-box}
 
+
+/* Controles clicáveis e estado visual dos filtros cruzados */
+.date-row,.location-row,.severity-row,.report-item{font:inherit;color:inherit;text-align:left;width:100%;cursor:pointer}
+.date-row{background:transparent;border-left:0;border-right:0;border-bottom:0}
+.location-row{border:0;border-bottom:1px solid #087fbd;border-radius:4px}
+.severity-row{border:0;background:transparent;padding:0}
+.report-item{display:block}
+.date-row:hover,.location-row:hover,.severity-row:hover,.report-item:hover{filter:brightness(1.25);outline:1px solid #18c9f4}
+.selected-filter{outline:1px solid #ffd23f!important;box-shadow:0 0 8px #ffd23f55}
+#totalCount:hover,#majorType:hover{color:#18c9f4}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
@@ -170,49 +181,82 @@ const categories=[
 {name:'Vítima fatal',icon:'🕊️'},{name:'Criança Perdida',icon:'🧒'},{name:'Outras',icon:'•••'}
 ];
 const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
-// A integração com a planilha será conectada posteriormente. Nenhum dado é fictício.
+// A integração com a planilha será conectada posteriormente.
 const occurrences=[];
-let selected=null;
+const filters={tipo:null,local:null,gravidade:null,data:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const count=arr=>arr.length;
+const norm=v=>String(v??'').trim().toLocaleLowerCase('pt-BR');
+function dateKey(v){
+ const s=String(v??'').trim();
+ if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+ const m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+ return m?m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'):s;
+}
+function activeData(){
+ return occurrences.filter(o=>
+  (!filters.tipo||norm(o.tipo)===norm(filters.tipo))&&
+  (!filters.local||norm(o.local||'Local não informado')===norm(filters.local))&&
+  (!filters.gravidade||norm(o.gravidade)===norm(filters.gravidade))&&
+  (!filters.data||dateKey(o.data)===filters.data)
+ );
+}
+function setFilter(key,value){filters[key]=filters[key]===value?null:value;render();}
 function render(){
- const filtered=selected?occurrences.filter(o=>o.tipo===selected):occurrences;
+ const data=activeData();
+ const filteredCount=data.length;
+ const filterNames=[filters.tipo,filters.local,filters.gravidade,filters.data].filter(Boolean);
  document.getElementById('categories').innerHTML=categories.map(cat=>{
-  const n=count(occurrences.filter(o=>o.tipo===cat.name));
-  return '<button type="button" class="cat '+(selected===cat.name?'active':'')+'" data-cat="'+esc(cat.name)+'"><span class="ico">'+cat.icon+'</span><strong><span>'+esc(cat.name)+'</span><b>'+(occurrences.length?n:'—')+'</b></strong></button>';
+  const n=data.filter(o=>norm(o.tipo)===norm(cat.name)).length;
+  return '<button type="button" class="cat '+(filters.tipo===cat.name?'active':'')+'" data-cat="'+esc(cat.name)+'"><span class="ico">'+cat.icon+'</span><strong><span>'+esc(cat.name)+'</span><b>'+(occurrences.length?n:'—')+'</b></strong></button>';
  }).join('');
- document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{
-  selected=selected===b.dataset.cat?null:b.dataset.cat;render();
- }));
- document.getElementById('totalCount').textContent=occurrences.length||'—';
- const totals=categories.map(cat=>({name:cat.name,n:occurrences.filter(o=>o.tipo===cat.name).length})).sort((a,b)=>b.n-a.n);
+ document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>setFilter('tipo',b.dataset.cat)));
+ const total=document.getElementById('totalCount');
+ total.textContent=occurrences.length?filteredCount:'—';
+ total.title='Clique para limpar todos os filtros';
+ total.style.cursor='pointer';
+ total.onclick=()=>{Object.keys(filters).forEach(k=>filters[k]=null);render();};
+ const totals=categories.map(cat=>({name:cat.name,n:data.filter(o=>norm(o.tipo)===norm(cat.name)).length})).sort((x,y)=>y.n-x.n);
  const major=totals[0];
- document.getElementById('majorType').textContent=occurrences.length&&major.n?major.name:'—';
- document.getElementById('majorCount').textContent=occurrences.length&&major.n?major.n+' registro(s)':'Aguardando dados';
+ const majorEl=document.getElementById('majorType');
+ majorEl.textContent=filteredCount&&major.n?major.name:'—';
+ majorEl.style.cursor=filteredCount&&major.n?'pointer':'default';
+ majorEl.title='Clique para filtrar pela ocorrência mais frequente';
+ majorEl.onclick=()=>{if(filteredCount&&major.n)setFilter('tipo',major.name);};
+ document.getElementById('majorCount').textContent=filteredCount&&major.n?major.n+' registro(s)':'Aguardando dados';
  document.getElementById('dateRows').innerHTML=[13,14,15].map(day=>{
-  const n=occurrences.filter(o=>o.data===('2026-11-'+String(day).padStart(2,'0'))).length;
-  return '<div class="date-row"><span>'+day+' de novembro de 2026</span><strong>'+(occurrences.length?n:'—')+'</strong></div>';
+  const key='2026-11-'+String(day).padStart(2,'0');
+  const n=data.filter(o=>dateKey(o.data)===key).length;
+  return '<button type="button" class="date-row '+(filters.data===key?'selected-filter':'')+'" data-date="'+key+'"><span>'+day+' de novembro de 2026</span><strong>'+(occurrences.length?n:'—')+'</strong></button>';
  }).join('');
- const locs={};occurrences.forEach(o=>{const l=o.local||'Local não informado';locs[l]=(locs[l]||0)+1;});
- const locationEntries=Object.entries(locs).sort((a,b)=>b[1]-a[1]);
+ document.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>setFilter('data',b.dataset.date)));
+ const locs={};data.forEach(o=>{const l=o.local||'Local não informado';locs[l]=(locs[l]||0)+1;});
+ const locationEntries=Object.entries(locs).sort((x,y)=>y[1]-x[1]);
  const palette=['#7926a8','#bd1765','#ed168e','#f07816','#ffb000','#76b83f','#4c54c8','#159bb7','#d64b4b','#8c6d31'];
- let angle=0;
- const totalLocations=locationEntries.reduce((sum,item)=>sum+item[1],0);
+ let angle=0;const totalLocations=locationEntries.reduce((sum,item)=>sum+item[1],0);
  const slices=locationEntries.map(([name,n],i)=>{const start=angle;angle+=n/totalLocations*360;return {name,n,color:palette[i%palette.length],start,end:angle,percent:n/totalLocations*100};});
- document.getElementById('locationPie').style.background=slices.length?'conic-gradient('+slices.map(s=>s.color+' '+s.start+'deg '+s.end+'deg').join(',')+')':'#123b5d';
- document.getElementById('locationPie').setAttribute('aria-label',slices.length?'Distribuição das ocorrências por local: '+slices.map(s=>s.name+' '+s.percent.toFixed(1)+'%').join(', '):'Aguardando dados de local');
- document.getElementById('locations').innerHTML=slices.length?slices.map(s=>'<div class="location-row"><i class="location-dot" style="background:'+s.color+'"></i><span class="location-name">'+esc(s.name)+'</span><b class="location-value">'+s.n+' ('+s.percent.toFixed(1).replace('.',',')+'%)</b></div>').join(''):'<div class="empty">Aguardando locais na planilha.</div>';
+ const pie=document.getElementById('locationPie');
+ pie.style.background=slices.length?'conic-gradient('+slices.map(s=>s.color+' '+s.start+'deg '+s.end+'deg').join(',')+')':'#123b5d';
+ pie.setAttribute('aria-label',slices.length?'Distribuição filtrada por local: '+slices.map(s=>s.name+' '+s.percent.toFixed(1)+'%').join(', '):'Aguardando dados de local');
+ document.getElementById('locations').innerHTML=slices.length?slices.map(s=>'<button type="button" class="location-row '+(filters.local===s.name?'selected-filter':'')+'" data-location="'+esc(s.name)+'"><i class="location-dot" style="background:'+s.color+'"></i><span class="location-name">'+esc(s.name)+'</span><b class="location-value">'+s.n+' ('+s.percent.toFixed(1).replace('.',',')+'%)</b></button>').join(''):'<div class="empty">Aguardando locais na planilha.</div>';
+ document.querySelectorAll('[data-location]').forEach(b=>b.addEventListener('click',()=>setFilter('local',b.dataset.location)));
  const levels=['Grave','Moderada','Leve'];
  document.getElementById('severity').innerHTML=levels.map(level=>{
-  const n=occurrences.filter(o=>(o.gravidade||'').toLowerCase()===level.toLowerCase()).length;
-  return '<div class="severity-row"><span>'+level+'</span><strong>'+(occurrences.length?n:'—')+'</strong></div>';
+  const n=data.filter(o=>norm(o.gravidade)===norm(level)).length;
+  return '<button type="button" class="severity-row '+(filters.gravidade===level?'selected-filter':'')+'" data-severity="'+level+'"><span>'+level+'</span><strong>'+(occurrences.length?n:'—')+'</strong></button>';
  }).join('');
- document.getElementById('reportFilter').textContent=selected?'Filtro: '+selected:'Todas as ocorrências';
- document.getElementById('reports').innerHTML=filtered.length?filtered.map(o=>'<div class="report-item"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+'</b>'+esc(o.relato||'Sem relato informado')+'</div>').join(''):'<div class="empty">'+(selected?'Nenhum relato desta categoria.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
+ document.querySelectorAll('[data-severity]').forEach(b=>b.addEventListener('click',()=>setFilter('gravidade',b.dataset.severity)));
+ document.getElementById('reportFilter').textContent=filterNames.length?'Filtros: '+filterNames.join(' · '):'Todas as ocorrências';
+ document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+' · '+esc(o.gravidade||'Gravidade não informada')+'</b>'+esc(o.relato||'Sem relato informado')+'</button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
+ document.querySelectorAll('[data-report]').forEach(b=>b.addEventListener('click',()=>{
+  const o=data[Number(b.dataset.report)];if(!o)return;
+  filters.tipo=o.tipo||null;filters.local=o.local||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
+ }));
  const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
  document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>—</strong><span>'+name+'</span></div>').join('');
+ const status=document.getElementById('status');
+ if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'Estrutura visual pronta · aguardando integração com Google Sheets';
 }
-document.getElementById('refresh').addEventListener('click',()=>{document.getElementById('status').textContent='Estrutura pronta · integração com Google Sheets será configurada posteriormente';render();});
+document.getElementById('refresh').addEventListener('click',()=>render());
 render();
 })();
 </script>
