@@ -128,6 +128,10 @@
  .occurrence-panel .categories{flex:1;min-height:0;align-content:space-between;grid-auto-rows:minmax(158px,auto);padding-bottom:8px}
 }
 
+
+/* Imagens dos cinco cartões de recursos armazenadas no próprio repositório */
+.resource img{position:absolute;inset:0 0 40px;width:100%;height:calc(100% - 40px);object-fit:cover;object-position:center 35%;display:block}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
@@ -198,7 +202,8 @@ function render(){
  }).join('');
  document.getElementById('reportFilter').textContent=selected?'Filtro: '+selected:'Todas as ocorrências';
  document.getElementById('reports').innerHTML=filtered.length?filtered.map(o=>'<div class="report-item"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+'</b>'+esc(o.relato||'Sem relato informado')+'</div>').join(''):'<div class="empty">'+(selected?'Nenhum relato desta categoria.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
- document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'">'+(name==='Drone'?'<img src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/imagesdrone-cbmse.png" alt="">':'')+'<strong>—</strong><span>'+name+'</span></div>').join('');
+ const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
+ document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>—</strong><span>'+name+'</span></div>').join('');
 }
 document.getElementById('refresh').addEventListener('click',()=>{document.getElementById('status').textContent='Estrutura pronta · integração com Google Sheets será configurada posteriormente';render();});
 render();
