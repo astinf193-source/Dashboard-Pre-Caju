@@ -19,6 +19,7 @@
 /* Recupera o tratamento visual com fotografias da Dashboard original */
 .cat{position:relative;isolation:isolate;overflow:hidden;min-height:158px;height:158px;width:280px;max-width:100%;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;text-align:left;background:#061b39 center/cover no-repeat;box-shadow:inset 0 0 12px #00c8ff40,0 0 9px #008eff80}
 .cat::before{content:"";position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;filter:saturate(1.12) contrast(1.06)}
+.cat::before{background-position:center 35%}
 .cat::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,transparent 25%,rgba(2,15,39,.18) 48%,rgba(2,18,50,.98) 100%)}
 .cat:nth-child(1)::before{background-image:url('imagens/aph.png')}
  .cat:nth-child(2)::before{background-image:url('imagens/Incendio.jpg')}
@@ -43,7 +44,7 @@
 
 /* Mesmo enquadramento da imagem Criança Perdida */
 .cat:nth-child(7)::before,.cat:nth-child(9)::before{background-size:cover;background-repeat:no-repeat;background-position:center}
-.cat:nth-child(7)::before{background-position:center 15%}
+.cat:nth-child(7)::before{background-position:center 35%}
 
 
 /* Painel analítico ao lado dos cartões de ocorrências */
