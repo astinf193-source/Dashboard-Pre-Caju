@@ -18,8 +18,8 @@
  
 /* Recupera o tratamento visual com fotografias da Dashboard original */
 .cat{position:relative;isolation:isolate;overflow:hidden;min-height:132px;display:flex;flex-direction:column;justify-content:flex-end;background:#061b39 url('') center/cover no-repeat;box-shadow:inset 0 0 12px #00c8ff40,0 0 9px #008eff80}
-.cat::before{content:"";position:absolute;inset:0;z-index:-2;background-size:cover;background-position:center;filter:saturate(1.12) contrast(1.06)}
-.cat::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,transparent 25%,rgba(2,15,39,.18) 48%,rgba(2,18,50,.98) 100%)}
+.cat::before{content:"";position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;filter:saturate(1.12) contrast(1.06)}
+.cat::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,transparent 25%,rgba(2,15,39,.18) 48%,rgba(2,18,50,.98) 100%)}
 .cat:nth-child(1)::before{background-image:url('https://ensino.bombeiros.pa.gov.br/pluginfile.php/12390/course/summary/IMG-20220805-WA0071.jpg')}
 .cat:nth-child(2)::before{background-image:url('https://4.bp.blogspot.com/_ThmqipIESjY/TEn14E2wBbI/AAAAAAAAE1o/bYjBRcTcCSs/s1600/z15.jpg')}
 .cat:nth-child(3)::before{background-image:url('https://krispmedia-web-storage.object.pscloud.io/generated/2026-03/7282185e-7702-46f3-ab98-2dccc874313c.webp')}
@@ -29,8 +29,8 @@
 .cat:nth-child(7)::before{background-image:url('https://krispmedia-web-storage.object.pscloud.io/generated/2026-03/7282185e-7702-46f3-ab98-2dccc874313c.webp')}
 .cat:nth-child(8)::before{background-image:url('https://www.ma.gov.br/uploads/ma/imgs/56364_56364_img_20251210_wa00632_8866512992549531660_7167621513393679031.jpg')}
 .cat:nth-child(9)::before{background-image:url('https://static.wixstatic.com/media/2a10eb_f48a6a8e75654f358fbd2a4aff569170~mv2.png/v1/fill/w_980%2Ch_653%2Cal_c%2Cq_90%2Cusm_0.66_1.00_0.01%2Cenc_avif%2Cquality_auto/2a10eb_f48a6a8e75654f358fbd2a4aff569170~mv2.png')}
-.cat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1}
-.cat .ico,.cat strong{position:relative;z-index:1;text-shadow:0 2px 5px #000}
+.cat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.cat .ico,.cat strong{position:relative;z-index:2;text-shadow:0 2px 5px #000}
 .cat strong{font-size:13px}
 .resource{position:relative;overflow:hidden;min-height:174px;height:174px;display:flex;flex-direction:column;justify-content:flex-end;padding:0;background:#071d3a center/cover no-repeat}
 .resource img{position:absolute;inset:0 0 40px;width:100%;height:calc(100% - 40px);object-fit:cover}
