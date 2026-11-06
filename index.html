@@ -80,6 +80,29 @@
 @media(max-width:1150px){.overview-layout{grid-template-columns:1fr}.occurrence-panel .categories{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:650px){.occurrence-panel .categories{grid-template-columns:repeat(2,minmax(0,1fr))}.occurrence-panel .cat{min-height:120px}.summary-grid,.detail-grid{grid-template-columns:1fr 1fr}.data-card{padding:8px}.data-card h3{font-size:11px}.date-row{font-size:11px}}
 
+
+/* Padronização visual dos indicadores com a identidade azul da Dashboard */
+.data-card{
+ background:linear-gradient(145deg,#0b2c4d,#061a33);
+ border:1px solid #087fbd;
+ border-radius:10px;
+ color:#f5fbff;
+ box-shadow:0 8px 22px #0004;
+}
+.data-card h3{color:#f5fbff}
+.total-card strong,.major-card strong{color:#ffd23f}
+.data-card small{color:#a9c4d9}
+.date-row{border-top:1px solid #087fbd;color:#e8f5ff}
+.location-row{background:#082746;border-bottom:1px solid #087fbd;color:#e8f5ff}
+.severity-row{color:#f5fbff}
+.severity-row:nth-child(1){--severity-color:#a83245}
+.severity-row:nth-child(2){--severity-color:#c56a32}
+.severity-row:nth-child(3){--severity-color:#1687ad}
+.severity-row strong{border:1px solid #168ee9;border-radius:4px}
+.report-item{background:#061b35;border:1px solid #087fbd;border-radius:6px;color:#dceeff}
+.report-item b{color:#18c9f4}
+.reports-heading span{color:#ffd23f}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
