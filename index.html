@@ -45,37 +45,107 @@
 .cat:nth-child(7)::before,.cat:nth-child(9)::before{background-size:cover;background-repeat:no-repeat;background-position:center}
 .cat:nth-child(7)::before{background-position:center 15%}
 
+
+/* Painel analítico ao lado dos cartões de ocorrências */
+.overview-layout{display:grid;grid-template-columns:minmax(0, 3fr) minmax(430px, 2fr);gap:12px;margin-top:12px;align-items:start}
+.occurrence-panel{margin:0;min-width:0}
+.occurrence-panel .categories{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.occurrence-panel .cat{width:100%;height:auto;min-height:158px;aspect-ratio:16/9}
+.analytics-column{display:grid;gap:10px;min-width:0}
+.summary-grid,.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.data-card{min-width:0;background:linear-gradient(145deg,#686868,#555);border:2px solid #aeb8c2;padding:10px;color:#fff;box-shadow:0 3px 9px #0005}
+.data-card h3{margin:0 0 8px;text-align:center;font-size:13px;font-weight:800;letter-spacing:.2px}
+.total-card,.major-card{min-height:105px;text-align:center}
+.total-card strong{font-size:38px;line-height:1.2}
+.major-card strong{display:block;font-size:27px;line-height:1.2}
+.data-card small{color:#e2e2e2;font-size:10px}
+.date-rows{display:grid}
+.date-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:5px 8px;border-top:1px solid #aaa;font-size:13px}
+.date-row strong{min-width:24px;text-align:right}
+.location-list,.severity-list{display:grid;gap:6px}
+.location-row{display:flex;justify-content:space-between;gap:8px;font-size:11px;padding:5px 7px;background:#555;border-bottom:1px solid #aaa}
+.severity-row{display:grid;grid-template-columns:1fr 70px;align-items:center;gap:7px;font-size:11px}
+.severity-row strong{text-align:center;padding:5px;background:var(--severity-color);color:white}
+.severity-row:nth-child(1){--severity-color:#8d4b4b}
+.severity-row:nth-child(2){--severity-color:#bd2525}
+.severity-row:nth-child(3){--severity-color:#d97842}
+.reports-card{display:flex;flex-direction:column;min-height:180px}
+.reports-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.reports-heading h3{flex:1}
+.reports-heading span{font-size:10px;color:#f2d778}
+.reports-scroll{max-height:230px;overflow-y:auto;display:grid;gap:6px;padding-right:4px}
+.report-item{font-size:11px;line-height:1.4;padding:7px;background:#505050;border-bottom:1px solid #aaa}
+.report-item b{display:block;color:#fff;margin-bottom:3px}
+.resources-panel{margin-top:12px}
+@media(max-width:1150px){.overview-layout{grid-template-columns:1fr}.occurrence-panel .categories{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.occurrence-panel .categories{grid-template-columns:repeat(2,minmax(0,1fr))}.occurrence-panel .cat{min-height:120px}.summary-grid,.detail-grid{grid-template-columns:1fr 1fr}.data-card{padding:8px}.data-card h3{font-size:11px}.date-row{font-size:11px}}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
 <header class="head"><img class="logo" src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/logo-precaju.png" alt="Pré-Caju"><div class="title"><div class="eyebrow">CORPO DE BOMBEIROS MILITAR · SERGIPE</div><h1>OPERAÇÃO <span>PRÉ-CAJU 2026</span></h1><p>SEGURANÇA, VIDA E TRANQUILIDADE · ORLA DE ATALAIA — ARACAJU/SE</p></div><img class="logo" src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/logo-cbmse.png" alt="Brasão CBMSE"></header>
 <div class="toolbar"><div><div><b>Dashboard Operacional</b></div><div id="status" class="status">Estrutura visual pronta · aguardando integração com Google Sheets</div></div><button id="refresh" type="button">↻ Atualizar visualização</button></div>
 
-<section class="panel" style="margin-top:12px"><h2>Ocorrências e registros operacionais</h2><div id="categories" class="categories"></div><div id="reports" class="list" style="margin-top:12px"><div class="empty">Aguardando integração da planilha.</div></div></section>
-<section class="panel" style="margin-top:12px"><h2>Recursos empregados</h2><div id="resourceTypes" class="resource-grid"></div></section>
+<section class="overview-layout">
+ <section class="panel occurrence-panel"><h2>Ocorrências e registros operacionais</h2><div id="categories" class="categories"></div></section>
+ <section class="analytics-column" aria-label="Indicadores das ocorrências">
+  <div class="summary-grid">
+   <article class="data-card total-card"><h3>TOTAL DE OCORRÊNCIAS</h3><strong id="totalCount">—</strong></article>
+   <article class="data-card major-card"><h3>MAIOR OCORRÊNCIA</h3><strong id="majorType">—</strong><small id="majorCount">Aguardando dados</small></article>
+  </div>
+  <article class="data-card dates-card"><h3>OCORRÊNCIAS POR DATA</h3><div class="date-rows" id="dateRows"></div></article>
+  <div class="detail-grid">
+   <article class="data-card"><h3>LOCAL DAS OCORRÊNCIAS</h3><div id="locations" class="location-list"></div></article>
+   <article class="data-card"><h3>GRAVIDADE DAS OCORRÊNCIAS</h3><div id="severity" class="severity-list"></div></article>
+  </div>
+  <article class="data-card reports-card"><div class="reports-heading"><h3>RELATO DAS OCORRÊNCIAS</h3><span id="reportFilter">Todas as ocorrências</span></div><div id="reports" class="reports-scroll"><div class="empty">Aguardando integração da planilha.</div></div></article>
+ </section>
+</section>
+<section class="panel resources-panel"><h2>Recursos empregados</h2><div id="resourceTypes" class="resource-grid"></div></section>
 </main>
 <script>
-(()=> {
+(()=>{
 const categories=[
-{name:'APH',icon:'🚑'},
-{name:'Incêndio',icon:'🔥'},
-{name:'Acidente Veicular',icon:'🚒'},
-{name:'Superlotação',icon:'👥'},
-{name:'Prevenção',icon:'🦺'},
-{name:'Afogamento',icon:'🌊'},
-{name:'Vítima fatal',icon:'🕊️'},
-{name:'Criança Perdida',icon:'🧒'},
-{name:'Outras',icon:'•••'}
+{name:'APH',icon:'🚑'},{name:'Incêndio',icon:'🔥'},{name:'Acidente Veicular',icon:'🚒'},
+{name:'Superlotação',icon:'👥'},{name:'Prevenção',icon:'🦺'},{name:'Afogamento',icon:'🌊'},
+{name:'Vítima fatal',icon:'🕊️'},{name:'Criança Perdida',icon:'🧒'},{name:'Outras',icon:'•••'}
 ];
 const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
-let selected='APH';
+// A integração com a planilha será conectada posteriormente. Nenhum dado é fictício.
+const occurrences=[];
+let selected=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const count=arr=>arr.length;
 function render(){
- document.getElementById('categories').innerHTML=categories.map(c=>'<button type="button" class="cat '+(selected===c.name?'active':'')+'" data-cat="'+esc(c.name)+'"><span class="ico">'+c.icon+'</span><strong><span>'+esc(c.name)+'</span><b>—</b></strong></button>').join('');
- document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.cat;render();}));
+ const filtered=selected?occurrences.filter(o=>o.tipo===selected):occurrences;
+ document.getElementById('categories').innerHTML=categories.map(cat=>{
+  const n=count(occurrences.filter(o=>o.tipo===cat.name));
+  return '<button type="button" class="cat '+(selected===cat.name?'active':'')+'" data-cat="'+esc(cat.name)+'"><span class="ico">'+cat.icon+'</span><strong><span>'+esc(cat.name)+'</span><b>'+(occurrences.length?n:'—')+'</b></strong></button>';
+ }).join('');
+ document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{
+  selected=selected===b.dataset.cat?null:b.dataset.cat;render();
+ }));
+ document.getElementById('totalCount').textContent=occurrences.length||'—';
+ const totals=categories.map(cat=>({name:cat.name,n:occurrences.filter(o=>o.tipo===cat.name).length})).sort((a,b)=>b.n-a.n);
+ const major=totals[0];
+ document.getElementById('majorType').textContent=occurrences.length&&major.n?major.name:'—';
+ document.getElementById('majorCount').textContent=occurrences.length&&major.n?major.n+' registro(s)':'Aguardando dados';
+ document.getElementById('dateRows').innerHTML=[13,14,15].map(day=>{
+  const n=occurrences.filter(o=>o.data===('2026-11-'+String(day).padStart(2,'0'))).length;
+  return '<div class="date-row"><span>'+day+' de novembro de 2026</span><strong>'+(occurrences.length?n:'—')+'</strong></div>';
+ }).join('');
+ const locs={};occurrences.forEach(o=>{const l=o.local||'Local não informado';locs[l]=(locs[l]||0)+1;});
+ document.getElementById('locations').innerHTML=Object.keys(locs).length?Object.entries(locs).sort((a,b)=>b[1]-a[1]).map(([l,n])=>'<div class="location-row"><span>'+esc(l)+'</span><b>'+n+'</b></div>').join(''):'<div class="empty">Aguardando locais na planilha.</div>';
+ const levels=['Grave','Moderada','Leve'];
+ document.getElementById('severity').innerHTML=levels.map(level=>{
+  const n=occurrences.filter(o=>(o.gravidade||'').toLowerCase()===level.toLowerCase()).length;
+  return '<div class="severity-row"><span>'+level+'</span><strong>'+(occurrences.length?n:'—')+'</strong></div>';
+ }).join('');
+ document.getElementById('reportFilter').textContent=selected?'Filtro: '+selected:'Todas as ocorrências';
+ document.getElementById('reports').innerHTML=filtered.length?filtered.map(o=>'<div class="report-item"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+'</b>'+esc(o.relato||'Sem relato informado')+'</div>').join(''):'<div class="empty">'+(selected?'Nenhum relato desta categoria.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
  document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'">'+(name==='Drone'?'<img src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/imagesdrone-cbmse.png" alt="">':'')+'<strong>—</strong><span>'+name+'</span></div>').join('');
 }
-document.getElementById('refresh').addEventListener('click',()=>{document.getElementById('status').textContent='Estrutura visual pronta · integração com Google Sheets será configurada posteriormente';});
+document.getElementById('refresh').addEventListener('click',()=>{document.getElementById('status').textContent='Estrutura pronta · integração com Google Sheets será configurada posteriormente';render();});
 render();
 })();
 </script>
