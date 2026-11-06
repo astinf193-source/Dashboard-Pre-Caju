@@ -103,6 +103,23 @@
 .report-item b{color:#18c9f4}
 .reports-heading span{color:#ffd23f}
 
+
+/* Alinhamento uniforme dos painéis e gráfico de pizza por local */
+.overview-layout{align-items:stretch}
+.occurrence-panel,.analytics-column{height:100%}
+.occurrence-panel{align-self:stretch}
+.analytics-column{align-content:start}
+.detail-grid{align-items:stretch}
+.detail-grid>.data-card{height:100%;min-height:220px}
+.location-chart-wrap{display:grid;grid-template-columns:minmax(110px,1fr) minmax(100px,1fr);align-items:center;gap:10px;min-height:165px}
+.location-pie{width:min(100%,170px);aspect-ratio:1;border-radius:50%;margin:auto;background:#123b5d;border:1px solid #168ee9;box-shadow:0 0 12px #008eff35}
+.location-legend{gap:5px;max-height:180px;overflow-y:auto;padding-right:3px}
+.location-legend .location-row{display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;gap:6px;padding:4px 2px;background:transparent;border:0;border-bottom:1px solid #087fbd;font-size:10px}
+.location-dot{width:8px;height:8px;border-radius:50%;display:block}
+.location-row .location-name{overflow-wrap:anywhere}
+.location-row .location-value{white-space:nowrap;color:#ffd23f}
+@media(max-width:650px){.location-chart-wrap{grid-template-columns:110px minmax(0,1fr);gap:8px}.location-pie{width:105px}.detail-grid>.data-card{min-height:190px}}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
@@ -118,7 +135,7 @@
   </div>
   <article class="data-card dates-card"><h3>OCORRÊNCIAS POR DATA</h3><div class="date-rows" id="dateRows"></div></article>
   <div class="detail-grid">
-   <article class="data-card"><h3>LOCAL DAS OCORRÊNCIAS</h3><div id="locations" class="location-list"></div></article>
+   <article class="data-card location-card"><h3>LOCAL DAS OCORRÊNCIAS</h3><div class="location-chart-wrap"><div id="locationPie" class="location-pie" role="img" aria-label="Gráfico de ocorrências por local"></div><div id="locations" class="location-list location-legend"><div class="empty">Aguardando locais na planilha.</div></div></div></article>
    <article class="data-card"><h3>GRAVIDADE DAS OCORRÊNCIAS</h3><div id="severity" class="severity-list"></div></article>
   </div>
   <article class="data-card reports-card"><div class="reports-heading"><h3>RELATO DAS OCORRÊNCIAS</h3><span id="reportFilter">Todas as ocorrências</span></div><div id="reports" class="reports-scroll"><div class="empty">Aguardando integração da planilha.</div></div></article>
@@ -158,7 +175,14 @@ function render(){
   return '<div class="date-row"><span>'+day+' de novembro de 2026</span><strong>'+(occurrences.length?n:'—')+'</strong></div>';
  }).join('');
  const locs={};occurrences.forEach(o=>{const l=o.local||'Local não informado';locs[l]=(locs[l]||0)+1;});
- document.getElementById('locations').innerHTML=Object.keys(locs).length?Object.entries(locs).sort((a,b)=>b[1]-a[1]).map(([l,n])=>'<div class="location-row"><span>'+esc(l)+'</span><b>'+n+'</b></div>').join(''):'<div class="empty">Aguardando locais na planilha.</div>';
+ const locationEntries=Object.entries(locs).sort((a,b)=>b[1]-a[1]);
+ const palette=['#7926a8','#bd1765','#ed168e','#f07816','#ffb000','#76b83f','#4c54c8','#159bb7','#d64b4b','#8c6d31'];
+ let angle=0;
+ const totalLocations=locationEntries.reduce((sum,item)=>sum+item[1],0);
+ const slices=locationEntries.map(([name,n],i)=>{const start=angle;angle+=n/totalLocations*360;return {name,n,color:palette[i%palette.length],start,end:angle,percent:n/totalLocations*100};});
+ document.getElementById('locationPie').style.background=slices.length?'conic-gradient('+slices.map(s=>s.color+' '+s.start+'deg '+s.end+'deg').join(',')+')':'#123b5d';
+ document.getElementById('locationPie').setAttribute('aria-label',slices.length?'Distribuição das ocorrências por local: '+slices.map(s=>s.name+' '+s.percent.toFixed(1)+'%').join(', '):'Aguardando dados de local');
+ document.getElementById('locations').innerHTML=slices.length?slices.map(s=>'<div class="location-row"><i class="location-dot" style="background:'+s.color+'"></i><span class="location-name">'+esc(s.name)+'</span><b class="location-value">'+s.n+' ('+s.percent.toFixed(1).replace('.',',')+'%)</b></div>').join(''):'<div class="empty">Aguardando locais na planilha.</div>';
  const levels=['Grave','Moderada','Leve'];
  document.getElementById('severity').innerHTML=levels.map(level=>{
   const n=occurrences.filter(o=>(o.gravidade||'').toLowerCase()===level.toLowerCase()).length;
