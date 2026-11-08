@@ -248,6 +248,37 @@
  .analytics-column .reports-scroll{flex:1;min-height:0;max-height:none;overflow-y:auto}
 }
 
+
+/* Preservar os indicadores superiores; somente o quadro de relatos ocupa o espaço restante */
+@media(min-width:1151px){
+ .overview-layout{align-items:stretch}
+ .analytics-column{
+  display:grid;
+  grid-template-rows:auto auto auto minmax(180px,1fr);
+  align-content:stretch;
+  align-items:stretch;
+  height:100%;
+  min-height:0;
+ }
+ .analytics-column>.summary-grid,
+ .analytics-column>.dates-card,
+ .analytics-column>.detail-grid{height:auto;min-height:0;align-self:start}
+ .analytics-column>.reports-card{
+  height:100%;
+  min-height:0;
+  margin:0;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+ }
+ .analytics-column>.reports-card>.reports-scroll{
+  flex:1;
+  min-height:0;
+  max-height:none;
+  overflow-y:auto;
+ }
+}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
