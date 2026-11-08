@@ -283,6 +283,43 @@
 /* Centralizar somente o título do painel de ocorrências */
 .occurrence-panel>h2{text-align:center!important;width:100%;margin-left:auto;margin-right:auto}
 
+
+/* Correção responsiva do quadro Gravidade das Ocorrências em celulares */
+@media(max-width:650px){
+ .detail-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px}
+ .detail-grid>.data-card{min-width:0;width:100%;box-sizing:border-box;padding:9px 7px;overflow:hidden}
+ .detail-grid>.data-card h3{font-size:clamp(10px,2.8vw,12px);line-height:1.25;overflow-wrap:anywhere}
+ .severity-list{width:100%;min-width:0;display:grid;gap:8px}
+ .severity-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(38px,56px)!important;
+  align-items:center;
+  gap:5px;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%;
+  box-sizing:border-box;
+  padding:0!important;
+  font-size:clamp(10px,3vw,13px);
+  overflow:hidden;
+ }
+ .severity-row span{min-width:0;white-space:normal;overflow-wrap:anywhere}
+ .severity-row strong{
+  display:grid;
+  place-items:center;
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  padding:7px 2px;
+  font-size:13px;
+ }
+}
+@media(max-width:380px){
+ .detail-grid{grid-template-columns:minmax(0,1fr)!important}
+ .detail-grid>.data-card{min-height:160px}
+ .severity-row{grid-template-columns:minmax(0,1fr) 54px!important}
+}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
