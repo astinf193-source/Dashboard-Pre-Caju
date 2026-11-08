@@ -196,6 +196,24 @@
  .title p{font-size:7px;letter-spacing:.2px}
 }
 
+
+/* Prevenção ativa e reativa como categorias secundárias, abaixo das nove ocorrências */
+@media(min-width:1151px){
+ .occurrence-panel{display:flex;flex-direction:column}
+ .occurrence-panel .categories{flex:0 0 auto;min-height:0;align-content:start;grid-auto-rows:minmax(158px,auto);padding-bottom:0}
+ .secondary-prevention{margin-top:12px;padding-top:10px;border-top:1px solid #087fbd;display:flex;justify-content:space-between;align-items:center;gap:12px}
+ .prevention-secondary{width:min(220px,32%);min-height:72px;display:flex;align-items:center;gap:10px;text-align:left;padding:9px 12px;border:1px solid #168ee9;border-radius:8px;background:linear-gradient(120deg,#0b3155,#061b35);box-shadow:0 0 10px #008eff24}
+ .prevention-secondary:last-child{margin-left:auto}
+}
+.secondary-prevention{display:flex;justify-content:space-between;gap:10px}
+.prevention-secondary{color:#f5fbff;cursor:pointer}
+.prevention-secondary:hover,.prevention-secondary.active{border-color:#ffd23f;box-shadow:0 0 10px #ffd23f55;background:#0b3d68}
+.prevention-symbol{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:50%;background:#073e65;border:1px solid #18c9f4;color:#18c9f4;font-size:21px;font-weight:900}
+.prevention-secondary b{display:block;font-size:11px;letter-spacing:.3px;color:#fff}
+.prevention-secondary small{display:block;margin-top:4px;font-size:9px;line-height:1.25;color:#a9c4d9}
+@media(max-width:1150px){.secondary-prevention{margin-top:10px;padding-top:10px;border-top:1px solid #087fbd}}
+@media(max-width:650px){.secondary-prevention{flex-direction:column;align-items:stretch}.prevention-secondary{width:100%;min-height:60px}}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
@@ -203,7 +221,7 @@
 <div class="toolbar"><div><div><b>Dashboard Operacional</b></div><div id="status" class="status">Estrutura visual pronta · aguardando integração com Google Sheets</div></div><button id="refresh" type="button">↻ Atualizar visualização</button></div>
 
 <section class="overview-layout">
- <section class="panel occurrence-panel"><h2>Ocorrências e registros operacionais</h2><div id="categories" class="categories"></div></section>
+ <section class="panel occurrence-panel"><h2>Ocorrências</h2><div id="categories" class="categories"></div><div id="secondaryPrevention" class="secondary-prevention"><button type="button" class="prevention-secondary" data-prevention="Prevenção ativa"><span class="prevention-symbol">↗</span><span><b>PREVENÇÃO ATIVA</b><small>Identificação antecipada de riscos</small></span></button><button type="button" class="prevention-secondary" data-prevention="Prevenção reativa"><span class="prevention-symbol">↘</span><span><b>PREVENÇÃO REATIVA</b><small>Intervenção diante de risco iniciado</small></span></button></div></section>
  <section class="analytics-column" aria-label="Indicadores das ocorrências">
   <div class="summary-grid">
    <article class="data-card total-card"><h3>TOTAL DE OCORRÊNCIAS</h3><strong id="totalCount">—</strong></article>
@@ -227,6 +245,7 @@ const categories=[
 {name:'Vítima fatal',icon:'🕊️'},{name:'Criança Perdida',icon:'🧒'},{name:'Outras',icon:'•••'}
 ];
 const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
+const secondaryTypes=['Prevenção ativa','Prevenção reativa'];
 // A integração com a planilha será conectada posteriormente.
 const occurrences=[];
 const filters={tipo:null,local:null,gravidade:null,data:null};
@@ -256,12 +275,13 @@ function render(){
   return '<button type="button" class="cat '+(filters.tipo===cat.name?'active':'')+'" data-cat="'+esc(cat.name)+'"><span class="ico">'+cat.icon+'</span><strong><span>'+esc(cat.name)+'</span><b>'+(occurrences.length?n:'—')+'</b></strong></button>';
  }).join('');
  document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>setFilter('tipo',b.dataset.cat)));
+ document.querySelectorAll('[data-prevention]').forEach(b=>{b.classList.toggle('active',filters.tipo===b.dataset.prevention);b.addEventListener('click',()=>setFilter('tipo',b.dataset.prevention));});
  const total=document.getElementById('totalCount');
  total.textContent=occurrences.length?filteredCount:'—';
  total.title='Clique para limpar todos os filtros';
  total.style.cursor='pointer';
  total.onclick=()=>{Object.keys(filters).forEach(k=>filters[k]=null);render();};
- const totals=categories.map(cat=>({name:cat.name,n:data.filter(o=>norm(o.tipo)===norm(cat.name)).length})).sort((x,y)=>y.n-x.n);
+ const totals=[...categories.map(cat=>cat.name),...secondaryTypes].map(name=>({name,n:data.filter(o=>norm(o.tipo)===norm(name)).length})).sort((x,y)=>y.n-x.n);
  const major=totals[0];
  const majorEl=document.getElementById('majorType');
  majorEl.textContent=filteredCount&&major.n?major.name:'—';
