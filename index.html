@@ -239,6 +239,15 @@
  .occurrence-panel .secondary-prevention{margin-top:auto;padding-top:12px}
 }
 
+
+/* Estender o quadro de relatos até a mesma linha inferior do painel esquerdo */
+@media(min-width:1151px){
+ .overview-layout{align-items:stretch}
+ .analytics-column{height:100%;min-height:0;display:grid;grid-template-rows:minmax(0,1fr);align-content:stretch}
+ .analytics-column .reports-card{height:100%;min-height:0;margin:0;box-sizing:border-box}
+ .analytics-column .reports-scroll{flex:1;min-height:0;max-height:none;overflow-y:auto}
+}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
