@@ -225,6 +225,14 @@
 .prevention-secondary:hover,.prevention-secondary.active{border-color:#168ee9;box-shadow:0 0 10px #008eff24;background:linear-gradient(120deg,#0b3155,#061b35)}
 @media(max-width:650px){.secondary-prevention{grid-template-columns:1fr}.prevention-secondary{width:100%!important}}
 
+
+/* Alinhar o painel de relatos ao início dos cartões inferiores da coluna analítica */
+@media(min-width:1151px){
+ .analytics-column{display:flex;flex-direction:column}
+ .analytics-column .reports-card{margin-top:12px;min-height:180px}
+ .analytics-column .detail-grid{margin-top:0}
+}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
