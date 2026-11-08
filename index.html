@@ -227,10 +227,16 @@
 
 
 /* Alinhar o painel de relatos ao início dos cartões inferiores da coluna analítica */
+@media(min-width:1151px){}
+
+
+/* Manter o quadro de relatos na posição original e descer os cartões preventivos */
 @media(min-width:1151px){
- .analytics-column{display:flex;flex-direction:column}
- .analytics-column .reports-card{margin-top:12px;min-height:180px}
- .analytics-column .detail-grid{margin-top:0}
+ .analytics-column{display:grid;gap:10px;align-content:start}
+ .analytics-column .reports-card{margin-top:0}
+ .occurrence-panel{display:flex;flex-direction:column}
+ .occurrence-panel .categories{flex:1 1 auto;align-content:start}
+ .occurrence-panel .secondary-prevention{margin-top:auto;padding-top:12px}
 }
 
 </style></head>
