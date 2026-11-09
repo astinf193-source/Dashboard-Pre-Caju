@@ -348,12 +348,12 @@
 const categories=[
 {name:'APH',icon:'🚑'},{name:'Incêndio',icon:'🔥'},{name:'Acidente Veicular',icon:'🚒'},
 {name:'Superlotação',icon:'👥'},{name:'Prevenção',icon:'🦺'},{name:'Afogamento',icon:'🌊'},
-{name:'Vítima fatal',icon:'🕊️'},{name:'Criança Perdida',icon:'🧒'},{name:'Outras',icon:'•••'}
+{name:'Vítima fatal',icon:'🕊️'},{name:'Criança Perdida',icon:'🧒'},{name:'Outras',icon:'•••'},{name:'Resgate',icon:'🛟'}
 ];
 const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
 
 // A integração com a planilha será conectada posteriormente.
-const occurrences=[];
+let occurrences=[];
 const filters={tipo:null,local:null,gravidade:null,data:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>String(v??'').trim().toLocaleLowerCase('pt-BR');
@@ -395,11 +395,13 @@ function render(){
  majorEl.title='Clique para filtrar pela ocorrência mais frequente';
  majorEl.onclick=()=>{if(filteredCount&&major.n)setFilter('tipo',major.name);};
  document.getElementById('majorCount').textContent=filteredCount&&major.n?major.n+' registro(s)':'Aguardando dados';
- document.getElementById('dateRows').innerHTML=[13,14,15].map(day=>{
-  const key='2026-11-'+String(day).padStart(2,'0');
+ const dateKeys=[...new Set(occurrences.map(o=>dateKey(o.data)).filter(Boolean))].sort();
+ document.getElementById('dateRows').innerHTML=dateKeys.length?dateKeys.map(key=>{
+  const [year,month,day]=key.split('-');
+  const label=new Date(Number(year),Number(month)-1,Number(day)).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
   const n=data.filter(o=>dateKey(o.data)===key).length;
-  return '<button type="button" class="date-row '+(filters.data===key?'selected-filter':'')+'" data-date="'+key+'"><span>'+day+' de novembro de 2026</span><strong>'+(occurrences.length?n:'—')+'</strong></button>';
- }).join('');
+  return '<button type="button" class="date-row '+(filters.data===key?'selected-filter':'')+'" data-date="'+key+'"><span>'+label+'</span><strong>'+n+'</strong></button>';
+ }).join(''):'<div class="empty">Aguardando datas na planilha.</div>';
  document.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>setFilter('data',b.dataset.date)));
  const locs={};data.forEach(o=>{const l=o.local||'Local não informado';locs[l]=(locs[l]||0)+1;});
  const locationEntries=Object.entries(locs).sort((x,y)=>y[1]-x[1]);
@@ -428,8 +430,25 @@ function render(){
  const status=document.getElementById('status');
  if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'Estrutura visual pronta · aguardando integração com Google Sheets';
 }
-document.getElementById('refresh').addEventListener('click',()=>render());
-render();
+async function loadTestData(){
+ try{
+  const response=await fetch('./dados-teste-2025.json',{cache:'no-store'});
+  if(!response.ok) throw new Error('HTTP '+response.status);
+  const rows=await response.json();
+  occurrences=rows.map(([tipo,local,gravidade,data])=>({tipo,local,gravidade,data,relato:'Relato anonimizado para teste da Dashboard.'}));
+  Object.keys(filters).forEach(k=>filters[k]=null);
+  render();
+  const status=document.getElementById('status');
+  if(status) status.textContent='MODO DE TESTE · dados históricos de 2025 · '+occurrences.length+' ocorrências';
+ }catch(error){
+  console.error('Falha ao carregar base de teste:',error);
+  const status=document.getElementById('status');
+  if(status) status.textContent='Não foi possível carregar a base de teste de 2025.';
+  render();
+ }
+}
+document.getElementById('refresh').addEventListener('click',loadTestData);
+loadTestData();
 })();
 </script>
 </body></html>
