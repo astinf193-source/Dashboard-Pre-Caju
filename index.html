@@ -512,14 +512,14 @@ async function loadTestData(){
   if(!csvText.trim())throw new Error('A planilha retornou conteúdo vazio.');
   const rows=parseCSV(csvText);
   const headers=rows.shift().map(x=>x.replace(/^\\uFEFF/,'').trim());
-  const required=['TIPO DE RELATÓRIO:','TIPO DE OCORRÊNCIA:','PONTO DE REFERÊNCIA','SETOR','GRAVIDADE','Data do Serviço','RELATO DA OCORRÊNCIA'];
+  const required=['TIPO DE RELATÓRIO:','TIPO DE OCORRÊNCIA:','PONTO DE REFERÊNCIA','SETORES','GRAVIDADE','Data do Serviço','RELATO DA OCORRÊNCIA'];
   const missing=required.filter(h=>!headers.includes(h));
   if(missing.length)throw new Error('Colunas ausentes no CSV: '+missing.join(', '));
   const col=name=>headers.indexOf(name);
   occurrences=rows.filter(r=>String(r[col('TIPO DE RELATÓRIO:')]||'').trim().toLocaleLowerCase('pt-BR')==='ocorrência').map(r=>({
    tipo:String(r[col('TIPO DE OCORRÊNCIA:')]||'').trim(),
    local:String(r[col('PONTO DE REFERÊNCIA')]||'').trim(),
-   setor:String(r[col('SETOR')]||'').trim(),
+   setor:String(r[col('SETORES')]||'').trim(),
    gravidade:({'Baixa':'Leve','Média':'Moderada','Media':'Moderada','Alta':'Grave'}[String(r[col('GRAVIDADE')]||'').trim()]||String(r[col('GRAVIDADE')]||'').trim()),
    data:String(r[col('Data do Serviço')]||'').trim(),
    relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||''),
