@@ -445,18 +445,18 @@ function parseCSV(text){
   if(quoted){if(ch==='"'&&next==='"'){field+='"';i++;}else if(ch==='"')quoted=false;else field+=ch;}
   else if(ch==='"')quoted=true;
   else if(ch===','){row.push(field);field='';}
-  else if(ch==='\\n'){row.push(field);rows.push(row);row=[];field='';}
-  else if(ch!=='\\r')field+=ch;
+  else if(ch==='\n'){row.push(field);rows.push(row);row=[];field='';}
+  else if(ch!=='\r')field+=ch;
  }
  if(field.length||row.length){row.push(field);rows.push(row);}
  return rows;
 }
 function safeReport(value){
  let t=String(value||'');
- t=t.replace(/\\b(CPF|RG|CNPJ|CNH|DOCUMENTO)\\s*[: nº.-]*[\\d.\\/-]{5,}/gi,'$1 [DADO DOCUMENTAL OCULTADO]');
- t=t.replace(/(?<!\\d)(?:\\d[ .\\/-]?){8,}\\d(?!\\d)/g,'[NÚMERO DE DOCUMENTO/CONTATO OCULTADO]');
- t=t.replace(/(Nome(?: do paciente| da vítima| da vitima)?\\s*:\\s*)[^\\n,.]+/gi,'$1[IDENTIFICAÇÃO OMITIDA]');
- t=t.replace(/(Paciente|Vítima|Vitima)\\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+){1,5})/g,'$1 [IDENTIFICAÇÃO OMITIDA]');
+ t=t.replace(/\b(CPF|RG|CNPJ|CNH|DOCUMENTO)\s*[: nº.-]*[\d.\/-]{5,}/gi,'$1 [DADO DOCUMENTAL OCULTADO]');
+ t=t.replace(/(?<!\d)(?:\d[ .\/-]?){8,}\d(?!\d)/g,'[NÚMERO DE DOCUMENTO/CONTATO OCULTADO]');
+ t=t.replace(/(Nome(?: do paciente| da vítima| da vitima)?\s*:\s*)[^\n,.]+/gi,'$1[IDENTIFICAÇÃO OMITIDA]');
+ t=t.replace(/(Paciente|Vítima|Vitima)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+){1,5})/g,'$1 [IDENTIFICAÇÃO OMITIDA]');
  return t;
 }
 async function loadTestData(){
