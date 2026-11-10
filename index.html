@@ -379,6 +379,9 @@
 <section class="panel resources-panel"><h2>Recursos empregados</h2><div id="resourceTypes" class="resource-grid"></div></section>
 </main>
 <script>
+window.addEventListener('error',e=>{const s=document.getElementById('status');if(s)s.textContent='Erro no JavaScript: '+(e.message||'falha de execução');});
+</script>
+<script>
 (()=>{
 const categories=[
 {name:'APH',icon:'🚑'},{name:'Incêndio',icon:'🔥'},{name:'Acidente Veicular',icon:'🚒'},
@@ -498,12 +501,19 @@ function safeReport(value){
  return t;
 }
 async function loadTestData(){
+ const status=document.getElementById('status');
+ if(status)status.textContent='Carregando dados da planilha de teste...';
  try{
   const url='https://docs.google.com/spreadsheets/d/e/2PACX-1vQYOAR1W1ydsgwLTeJ8Zu6ro183sdsYJfsQHDMEdF9BJ6E05XMW9XJU6z9ElO7DfcyMDTSJsB-hGvj1/pub?gid=2039429476&single=true&output=csv';
   const response=await fetch(url,{cache:'no-store'});
   if(!response.ok)throw new Error('HTTP '+response.status);
-  const rows=parseCSV(await response.text());
-  const headers=rows.shift().map(x=>x.trim());
+  const csvText=await response.text();
+  if(!csvText.trim())throw new Error('A planilha retornou conteúdo vazio.');
+  const rows=parseCSV(csvText);
+  const headers=rows.shift().map(x=>x.replace(/^\\uFEFF/,'').trim());
+  const required=['TIPO DE RELATÓRIO:','TIPO DE OCORRÊNCIA:','PONTO DE REFERÊNCIA','GRAVIDADE','Data do Serviço','RELATO DA OCORRÊNCIA'];
+  const missing=required.filter(h=>!headers.includes(h));
+  if(missing.length)throw new Error('Colunas ausentes no CSV: '+missing.join(', '));
   const col=name=>headers.indexOf(name);
   occurrences=rows.filter(r=>String(r[col('TIPO DE RELATÓRIO:')]||'').trim().toLocaleLowerCase('pt-BR')==='ocorrência').map(r=>({
    tipo:String(r[col('TIPO DE OCORRÊNCIA:')]||'').trim(),
