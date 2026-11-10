@@ -401,8 +401,8 @@ function dateKey(v){
 
 function preventionKind(o){
  const source=norm([o.tipo,o.classificacao,o.relato].filter(Boolean).join(' '));
- if(/prevenção\\s+ativa|prevencao\\s+ativa/.test(source))return 'ativa';
- if(/prevenção\\s+reativa|prevencao\\s+reativa/.test(source))return 'reativa';
+ if(/prevenção\s+ativa|prevencao\s+ativa/.test(source))return 'ativa';
+ if(/prevenção\s+reativa|prevencao\s+reativa/.test(source))return 'reativa';
  return '';
 }
 function isEventPrevention(o){return norm(o.tipo)==='prevenção'&&!preventionKind(o);}
