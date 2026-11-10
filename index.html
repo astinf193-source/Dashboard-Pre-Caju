@@ -469,7 +469,8 @@ function render(){
   const o=data[Number(b.dataset.report)];if(!o)return;
   filters.tipo=o.tipo||null;filters.local=o.local||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
  }));
- document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').length:'—';\ndocument.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').length:'—';
+ document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').length:'—';
+document.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').length:'—';
  const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
  document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>—</strong><span>'+name+'</span></div>').join('');
  const status=document.getElementById('status');
