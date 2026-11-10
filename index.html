@@ -406,7 +406,8 @@ function preventionKind(o){
  return '';
 }
 function isEventPrevention(o){return norm(o.tipo)==='prevenção'&&!preventionKind(o);}
-\nfunction activeData(){
+
+function activeData(){
  return occurrences.filter(o=>
   (!filters.tipo||(norm(filters.tipo)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(filters.tipo)))&&
   (!filters.local||norm(o.local||'Local não informado')===norm(filters.local))&&
