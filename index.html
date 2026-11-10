@@ -428,7 +428,7 @@ function render(){
  }).join('');
  document.querySelectorAll('[data-severity]').forEach(b=>b.addEventListener('click',()=>setFilter('gravidade',b.dataset.severity)));
  document.getElementById('reportFilter').textContent=filterNames.length?'Filtros: '+filterNames.join(' · '):'Todas as ocorrências';
- document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+' · '+esc(o.gravidade||'Gravidade não informada')+'</b>'+esc(o.relato||'Sem relato informado')+'</button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
+ document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+' · '+esc(o.gravidade||'Gravidade não informada')+'</b><span class="report-full">'+esc(o.relato||'Relato não informado')+'</span></button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
  document.querySelectorAll('[data-report]').forEach(b=>b.addEventListener('click',()=>{
   const o=data[Number(b.dataset.report)];if(!o)return;
   filters.tipo=o.tipo||null;filters.local=o.local||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
@@ -453,7 +453,7 @@ function parseCSV(text){
 }
 function safeReport(value){
  let t=String(value||'');
- t=t.replace(/\\b(?:CPF|RG|CNPJ|CNH|DOCUMENTO)\\s*[: nº.-]*[\\d.\\/-]{5,}/gi,'$1 [DADO DOCUMENTAL OCULTADO]');
+ t=t.replace(/\\b(CPF|RG|CNPJ|CNH|DOCUMENTO)\\s*[: nº.-]*[\\d.\\/-]{5,}/gi,'$1 [DADO DOCUMENTAL OCULTADO]');
  t=t.replace(/(?<!\\d)(?:\\d[ .\\/-]?){8,}\\d(?!\\d)/g,'[NÚMERO DE DOCUMENTO/CONTATO OCULTADO]');
  t=t.replace(/(Nome(?: do paciente| da vítima| da vitima)?\\s*:\\s*)[^\\n,.]+/gi,'$1[IDENTIFICAÇÃO OMITIDA]');
  t=t.replace(/(Paciente|Vítima|Vitima)\\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+){1,5})/g,'$1 [IDENTIFICAÇÃO OMITIDA]');
