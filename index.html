@@ -398,9 +398,17 @@ function dateKey(v){
  const m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
  return m?m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'):s;
 }
-function activeData(){
+
+function preventionKind(o){
+ const source=norm([o.tipo,o.classificacao,o.relato].filter(Boolean).join(' '));
+ if(/prevenção\\s+ativa|prevencao\\s+ativa/.test(source))return 'ativa';
+ if(/prevenção\\s+reativa|prevencao\\s+reativa/.test(source))return 'reativa';
+ return '';
+}
+function isEventPrevention(o){return norm(o.tipo)==='prevenção'&&!preventionKind(o);}
+\nfunction activeData(){
  return occurrences.filter(o=>
-  (!filters.tipo||norm(o.tipo)===norm(filters.tipo))&&
+  (!filters.tipo||(norm(filters.tipo)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(filters.tipo)))&&
   (!filters.local||norm(o.local||'Local não informado')===norm(filters.local))&&
   (!filters.gravidade||norm(o.gravidade)===norm(filters.gravidade))&&
   (!filters.data||dateKey(o.data)===filters.data)
@@ -412,7 +420,7 @@ function render(){
  const filteredCount=data.length;
  const filterNames=[filters.tipo,filters.local,filters.gravidade,filters.data].filter(Boolean);
  document.getElementById('categories').innerHTML=categories.map(cat=>{
-  const n=data.filter(o=>norm(o.tipo)===norm(cat.name)).length;
+  const n=data.filter(o=>norm(cat.name)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(cat.name)).length;
   return '<button type="button" class="cat '+(filters.tipo===cat.name?'active':'')+'" data-cat="'+esc(cat.name)+'"><span class="ico">'+cat.icon+'</span><strong><span>'+esc(cat.name)+'</span><b>'+(occurrences.length?n:'—')+'</b></strong></button>';
  }).join('');
  document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>setFilter('tipo',b.dataset.cat)));
@@ -422,7 +430,7 @@ function render(){
  total.title='Clique para limpar todos os filtros';
  total.style.cursor='pointer';
  total.onclick=()=>{Object.keys(filters).forEach(k=>filters[k]=null);render();};
- const totals=categories.map(cat=>cat.name).map(name=>({name,n:data.filter(o=>norm(o.tipo)===norm(name)).length})).sort((x,y)=>y.n-x.n);
+ const totals=categories.map(cat=>cat.name).map(name=>({name,n:data.filter(o=>norm(name)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(name)).length})).sort((x,y)=>y.n-x.n);
  const major=totals[0];
  const majorEl=document.getElementById('majorType');
  majorEl.textContent=filteredCount&&major.n?major.name:'—';
@@ -460,7 +468,7 @@ function render(){
   const o=data[Number(b.dataset.report)];if(!o)return;
   filters.tipo=o.tipo||null;filters.local=o.local||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
  }));
- const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
+ document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').length:'—';\n document.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').length:'—';\n const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
  document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>—</strong><span>'+name+'</span></div>').join('');
  const status=document.getElementById('status');
  if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'MODO DE TESTE · dados históricos de 2025';
@@ -499,7 +507,7 @@ async function loadTestData(){
    local:String(r[col('PONTO DE REFERÊNCIA')]||'').trim(),
    gravidade:({'Baixa':'Leve','Média':'Moderada','Media':'Moderada','Alta':'Grave'}[String(r[col('GRAVIDADE')]||'').trim()]||String(r[col('GRAVIDADE')]||'').trim()),
    data:String(r[col('Data do Serviço')]||'').trim(),
-   relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||'')
+   relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||''),\n   classificacao:headers.map((h,i)=>/prevenção|prevencao|classificação|classificacao/i.test(h)?String(r[i]||''):'').filter(Boolean).join(' ')+' '+r.join(' ')
   }));
   Object.keys(filters).forEach(k=>filters[k]=null);
   render();
