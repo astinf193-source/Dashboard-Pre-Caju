@@ -469,7 +469,8 @@ function render(){
   const o=data[Number(b.dataset.report)];if(!o)return;
   filters.tipo=o.tipo||null;filters.local=o.local||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
  }));
- document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').length:'—';\n document.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').length:'—';\n const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
+ document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').length:'—';\ndocument.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').length:'—';
+ const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
  document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>—</strong><span>'+name+'</span></div>').join('');
  const status=document.getElementById('status');
  if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'MODO DE TESTE · dados históricos de 2025';
@@ -508,7 +509,8 @@ async function loadTestData(){
    local:String(r[col('PONTO DE REFERÊNCIA')]||'').trim(),
    gravidade:({'Baixa':'Leve','Média':'Moderada','Media':'Moderada','Alta':'Grave'}[String(r[col('GRAVIDADE')]||'').trim()]||String(r[col('GRAVIDADE')]||'').trim()),
    data:String(r[col('Data do Serviço')]||'').trim(),
-   relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||''),\n   classificacao:headers.map((h,i)=>/prevenção|prevencao|classificação|classificacao/i.test(h)?String(r[i]||''):'').filter(Boolean).join(' ')+' '+r.join(' ')
+   relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||''),
+   classificacao:headers.map((h,i)=>/prevenção|prevencao|classificação|classificacao/i.test(h)?String(r[i]||''):'').filter(Boolean).join(' ')+' '+r.join(' ')
   }));
   Object.keys(filters).forEach(k=>filters[k]=null);
   render();
