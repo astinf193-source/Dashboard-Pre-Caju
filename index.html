@@ -370,7 +370,7 @@
   </div>
   <article class="data-card dates-card"><h3>OCORRÊNCIAS POR DATA</h3><div class="date-rows" id="dateRows"></div></article>
   <div class="detail-grid">
-   <article class="data-card location-card"><h3>LOCAL DAS OCORRÊNCIAS</h3><div class="location-chart-wrap"><div id="locationPie" class="location-pie" role="img" aria-label="Gráfico de ocorrências por local"></div><div id="locations" class="location-list location-legend"><div class="empty">Aguardando locais na planilha.</div></div></div></article>
+   <article class="data-card location-card"><h3>SETOR DAS OCORRÊNCIAS</h3><div class="location-chart-wrap"><div id="locationPie" class="location-pie" role="img" aria-label="Gráfico de ocorrências por local"></div><div id="locations" class="location-list location-legend"><div class="empty">Aguardando locais na planilha.</div></div></div></article>
    <article class="data-card"><h3>GRAVIDADE DAS OCORRÊNCIAS</h3><div id="severity" class="severity-list"></div></article>
   </div>
   <article class="data-card reports-card"><div class="reports-heading"><h3>RELATO DAS OCORRÊNCIAS</h3><span id="reportFilter">Todas as ocorrências</span></div><div id="reports" class="reports-scroll"><div class="empty">Aguardando integração da planilha.</div></div></article>
@@ -392,7 +392,7 @@ const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
 
 // A integração com a planilha será conectada posteriormente.
 let occurrences=[];
-const filters={tipo:null,local:null,gravidade:null,data:null};
+const filters={tipo:null,local:null,setor:null,gravidade:null,data:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>String(v??'').trim().toLocaleLowerCase('pt-BR');
 function dateKey(v){
@@ -414,6 +414,7 @@ function activeData(){
  return occurrences.filter(o=>
   (!filters.tipo||(norm(filters.tipo)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(filters.tipo)))&&
   (!filters.local||norm(o.local||'Local não informado')===norm(filters.local))&&
+  (!filters.setor||norm(o.setor||'Setor não informado')===norm(filters.setor))&&
   (!filters.gravidade||norm(o.gravidade)===norm(filters.gravidade))&&
   (!filters.data||dateKey(o.data)===filters.data)
  );
@@ -450,7 +451,7 @@ function render(){
   return '<button type="button" class="date-row '+(filters.data===key?'selected-filter':'')+'" data-date="'+key+'"><span>'+label+'</span><strong>'+n+'</strong></button>';
  }).join(''):'<div class="empty">Aguardando datas na planilha.</div>';
  document.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>setFilter('data',b.dataset.date)));
- const locs={};data.filter(o=>norm(o.tipo)!=='prevenção'&&norm(o.tipo)!=='prevenção ativa'&&norm(o.tipo)!=='prevenção reativa').forEach(o=>{const l=o.local||'Local não informado';locs[l]=(locs[l]||0)+1;});
+ const locs={};data.filter(o=>norm(o.tipo)!=='prevenção'&&norm(o.tipo)!=='prevenção ativa'&&norm(o.tipo)!=='prevenção reativa').forEach(o=>{const l=o.setor||'Setor não informado';locs[l]=(locs[l]||0)+1;});
  const locationEntries=Object.entries(locs).sort((x,y)=>y[1]-x[1]);
  const palette=['#7926a8','#bd1765','#ed168e','#f07816','#ffb000','#76b83f','#4c54c8','#159bb7','#d64b4b','#8c6d31'];
  let angle=0;const totalLocations=locationEntries.reduce((sum,item)=>sum+item[1],0);
@@ -459,7 +460,7 @@ function render(){
  pie.style.background=slices.length?'conic-gradient('+slices.map(s=>s.color+' '+s.start+'deg '+s.end+'deg').join(',')+')':'#123b5d';
  pie.setAttribute('aria-label',slices.length?'Distribuição filtrada por local: '+slices.map(s=>s.name+' '+s.percent.toFixed(1)+'%').join(', '):'Aguardando dados de local');
  document.getElementById('locations').innerHTML=slices.length?slices.map(s=>'<button type="button" class="location-row '+(filters.local===s.name?'selected-filter':'')+'" data-location="'+esc(s.name)+'"><i class="location-dot" style="background:'+s.color+'"></i><span class="location-name">'+esc(s.name)+'</span><b class="location-value">'+s.n+' ('+s.percent.toFixed(1).replace('.',',')+'%)</b></button>').join(''):'<div class="empty">Aguardando locais na planilha.</div>';
- document.querySelectorAll('[data-location]').forEach(b=>b.addEventListener('click',()=>setFilter('local',b.dataset.location)));
+ document.querySelectorAll('[data-location]').forEach(b=>b.addEventListener('click',()=>setFilter('setor',b.dataset.location)));
  const levels=['Grave','Moderada','Leve'];
  document.getElementById('severity').innerHTML=levels.map(level=>{
   const n=data.filter(o=>norm(o.gravidade)===norm(level)).length;
@@ -470,7 +471,7 @@ function render(){
  document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+' · '+esc(o.gravidade||'Gravidade não informada')+'</b><span class="report-full">'+esc(o.relato||'Relato não informado')+'</span></button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
  document.querySelectorAll('[data-report]').forEach(b=>b.addEventListener('click',()=>{
   const o=data[Number(b.dataset.report)];if(!o)return;
-  filters.tipo=o.tipo||null;filters.local=o.local||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
+  filters.tipo=o.tipo||null;filters.local=o.local||null;filters.setor=o.setor||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
  }));
  document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').length:'—';
 document.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').length:'—';
@@ -511,13 +512,14 @@ async function loadTestData(){
   if(!csvText.trim())throw new Error('A planilha retornou conteúdo vazio.');
   const rows=parseCSV(csvText);
   const headers=rows.shift().map(x=>x.replace(/^\\uFEFF/,'').trim());
-  const required=['TIPO DE RELATÓRIO:','TIPO DE OCORRÊNCIA:','PONTO DE REFERÊNCIA','GRAVIDADE','Data do Serviço','RELATO DA OCORRÊNCIA'];
+  const required=['TIPO DE RELATÓRIO:','TIPO DE OCORRÊNCIA:','PONTO DE REFERÊNCIA','SETOR','GRAVIDADE','Data do Serviço','RELATO DA OCORRÊNCIA'];
   const missing=required.filter(h=>!headers.includes(h));
   if(missing.length)throw new Error('Colunas ausentes no CSV: '+missing.join(', '));
   const col=name=>headers.indexOf(name);
   occurrences=rows.filter(r=>String(r[col('TIPO DE RELATÓRIO:')]||'').trim().toLocaleLowerCase('pt-BR')==='ocorrência').map(r=>({
    tipo:String(r[col('TIPO DE OCORRÊNCIA:')]||'').trim(),
    local:String(r[col('PONTO DE REFERÊNCIA')]||'').trim(),
+   setor:String(r[col('SETOR')]||'').trim(),
    gravidade:({'Baixa':'Leve','Média':'Moderada','Media':'Moderada','Alta':'Grave'}[String(r[col('GRAVIDADE')]||'').trim()]||String(r[col('GRAVIDADE')]||'').trim()),
    data:String(r[col('Data do Serviço')]||'').trim(),
    relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||''),
