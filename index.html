@@ -320,6 +320,14 @@
  .severity-row{grid-template-columns:minmax(0,1fr) 54px!important}
 }
 
+
+/* Relatos: manter dimensões do cartão e rolagem interna; texto integral com quebra */
+.reports-card{height:100%;min-height:0;overflow:hidden}
+.reports-scroll{height:100%;min-height:0;max-height:100%;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;scrollbar-color:#168ee9 #061b35;padding-right:6px}
+.report-item{display:block;flex:0 0 auto;width:100%;white-space:normal;text-align:left;line-height:1.45;padding:9px 10px}
+.report-item .report-full{display:block;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal}
+@media(min-width:1151px){.analytics-column>.reports-card{height:100%;min-height:0}.analytics-column>.reports-card>.reports-scroll{height:100%;max-height:100%;overflow-y:auto}}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
@@ -348,7 +356,7 @@
 const categories=[
 {name:'APH',icon:'🚑'},{name:'Incêndio',icon:'🔥'},{name:'Acidente Veicular',icon:'🚒'},
 {name:'Superlotação',icon:'👥'},{name:'Prevenção',icon:'🦺'},{name:'Afogamento',icon:'🌊'},
-{name:'Vítima fatal',icon:'🕊️'},{name:'Criança Perdida',icon:'🧒'},{name:'Outras',icon:'•••'},{name:'Resgate',icon:'🛟'}
+{name:'Vítima fatal',icon:'🕊️'},{name:'Criança Perdida',icon:'🧒'},{name:'Outras',icon:'•••'}
 ];
 const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
 
@@ -403,7 +411,7 @@ function render(){
   return '<button type="button" class="date-row '+(filters.data===key?'selected-filter':'')+'" data-date="'+key+'"><span>'+label+'</span><strong>'+n+'</strong></button>';
  }).join(''):'<div class="empty">Aguardando datas na planilha.</div>';
  document.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>setFilter('data',b.dataset.date)));
- const locs={};data.forEach(o=>{const l=o.local||'Local não informado';locs[l]=(locs[l]||0)+1;});
+ const locs={};data.filter(o=>norm(o.tipo)!=='prevenção'&&norm(o.tipo)!=='prevenção ativa'&&norm(o.tipo)!=='prevenção reativa').forEach(o=>{const l=o.local||'Local não informado';locs[l]=(locs[l]||0)+1;});
  const locationEntries=Object.entries(locs).sort((x,y)=>y[1]-x[1]);
  const palette=['#7926a8','#bd1765','#ed168e','#f07816','#ffb000','#76b83f','#4c54c8','#159bb7','#d64b4b','#8c6d31'];
  let angle=0;const totalLocations=locationEntries.reduce((sum,item)=>sum+item[1],0);
@@ -428,22 +436,52 @@ function render(){
  const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
  document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>—</strong><span>'+name+'</span></div>').join('');
  const status=document.getElementById('status');
- if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'Estrutura visual pronta · aguardando integração com Google Sheets';
+ if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'MODO DE TESTE · dados históricos de 2025';
+}
+function parseCSV(text){
+ const rows=[];let row=[],field='',quoted=false;
+ for(let i=0;i<text.length;i++){
+  const ch=text[i],next=text[i+1];
+  if(quoted){if(ch==='"'&&next==='"'){field+='"';i++;}else if(ch==='"')quoted=false;else field+=ch;}
+  else if(ch==='"')quoted=true;
+  else if(ch===','){row.push(field);field='';}
+  else if(ch==='\\n'){row.push(field);rows.push(row);row=[];field='';}
+  else if(ch!=='\\r')field+=ch;
+ }
+ if(field.length||row.length){row.push(field);rows.push(row);}
+ return rows;
+}
+function safeReport(value){
+ let t=String(value||'');
+ t=t.replace(/\\b(?:CPF|RG|CNPJ|CNH|DOCUMENTO)\\s*[: nº.-]*[\\d.\\/-]{5,}/gi,'$1 [DADO DOCUMENTAL OCULTADO]');
+ t=t.replace(/(?<!\\d)(?:\\d[ .\\/-]?){8,}\\d(?!\\d)/g,'[NÚMERO DE DOCUMENTO/CONTATO OCULTADO]');
+ t=t.replace(/(Nome(?: do paciente| da vítima| da vitima)?\\s*:\\s*)[^\\n,.]+/gi,'$1[IDENTIFICAÇÃO OMITIDA]');
+ t=t.replace(/(Paciente|Vítima|Vitima)\\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+){1,5})/g,'$1 [IDENTIFICAÇÃO OMITIDA]');
+ return t;
 }
 async function loadTestData(){
  try{
-  const response=await fetch('./dados-teste-2025.json',{cache:'no-store'});
-  if(!response.ok) throw new Error('HTTP '+response.status);
-  const rows=await response.json();
-  occurrences=rows.map(([tipo,local,gravidade,data])=>({tipo,local,gravidade,data,relato:'Relato anonimizado para teste da Dashboard.'}));
+  const url='https://docs.google.com/spreadsheets/d/e/2PACX-1vQYOAR1W1ydsgwLTeJ8Zu6ro183sdsYJfsQHDMEdF9BJ6E05XMW9XJU6z9ElO7DfcyMDTSJsB-hGvj1/pub?gid=2039429476&single=true&output=csv';
+  const response=await fetch(url,{cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const rows=parseCSV(await response.text());
+  const headers=rows.shift().map(x=>x.trim());
+  const col=name=>headers.indexOf(name);
+  occurrences=rows.filter(r=>String(r[col('TIPO DE RELATÓRIO:')]||'').trim().toLocaleLowerCase('pt-BR')==='ocorrência').map(r=>({
+   tipo:String(r[col('TIPO DE OCORRÊNCIA:')]||'').trim(),
+   local:String(r[col('PONTO DE REFERÊNCIA')]||'').trim(),
+   gravidade:({'Baixa':'Leve','Média':'Moderada','Media':'Moderada','Alta':'Grave'}[String(r[col('GRAVIDADE')]||'').trim()]||String(r[col('GRAVIDADE')]||'').trim()),
+   data:String(r[col('Data do Serviço')]||'').trim(),
+   relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||'')
+  }));
   Object.keys(filters).forEach(k=>filters[k]=null);
   render();
   const status=document.getElementById('status');
-  if(status) status.textContent='MODO DE TESTE · dados históricos de 2025 · '+occurrences.length+' ocorrências';
+  if(status)status.textContent='MODO DE TESTE · dados históricos de 2025 · '+occurrences.length+' ocorrências';
  }catch(error){
-  console.error('Falha ao carregar base de teste:',error);
+  console.error('Falha ao carregar CSV de teste:',error);
   const status=document.getElementById('status');
-  if(status) status.textContent='Não foi possível carregar a base de teste de 2025.';
+  if(status)status.textContent='Não foi possível carregar a planilha CSV publicada.';
   render();
  }
 }
