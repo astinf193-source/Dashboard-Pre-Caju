@@ -406,9 +406,9 @@ function preventionKind(o){
  if(norm(o.tipo)!=='prevenção')return '';
  const relato=norm(o.relato||'');
  // Ativa: ações antecipadas, rondas, sinalização e pontos-base.
- if(/prevenç(?:ão|ões)\\s+ativ[ao]s?|prevenção ativa|rondas?|placas? de sinalização|ponto base/.test(relato))return 'ativa';
+ if(/prevenç(?:ão|ões)\s+ativ[ao]s?|prevenção ativa|rondas?|placas? de sinalização|ponto base/.test(relato))return 'ativa';
  // Reativa: perigo ou incidente já iniciado, exigindo intervenção da equipe.
- if(/prevenç(?:ão|ões)\\s+reativ[ao]s?|alto risco|risco iminente|situação de perigo|perigo já iniciado|acidentad[oa]|vítima de afogamento|em processo de afogamento|incidente em andamento/.test(relato))return 'reativa';
+ if(/prevenç(?:ão|ões)\s+reativ[ao]s?|alto risco|risco iminente|situação de perigo|perigo já iniciado|acidentad[oa]|vítima de afogamento|em processo de afogamento|incidente em andamento/.test(relato))return 'reativa';
  return '';
 }
 function isEventPrevention(o){return norm(o.tipo)==='prevenção'&&!preventionKind(o);}
