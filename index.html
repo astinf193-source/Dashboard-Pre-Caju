@@ -405,9 +405,9 @@ function dateKey(v){
 function preventionKind(o){
  const source=norm([o.tipo,o.classificacao,o.relato].filter(Boolean).join(' '));
  // Ações preventivas antecipadas: rondas, placas de sinalização e ponto-base.
- if(/\\b(rondas?|placas? de sinalização|ponto[- ]base)\\b/.test(source))return 'ativa';
+ if(/(?:^|\\s)(rondas?|placas? de sinalização|ponto[- ]base)(?:^|\\s)/.test(source))return 'ativa';
  // Ações diante de situações observadas: orientações e advertências.
- if(/\\b(orientações?|advertências?)\\b/.test(source))return 'reativa';
+ if(/(?:^|\\s)(orientações?|advertências?)(?:^|\\s)/.test(source))return 'reativa';
  return '';
 }
 function isEventPrevention(o){return norm(o.tipo)==='prevenção'&&!preventionKind(o);}
