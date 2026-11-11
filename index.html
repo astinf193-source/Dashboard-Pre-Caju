@@ -428,7 +428,7 @@ function render(){
  const filterNames=[filters.tipo,filters.local,filters.gravidade,filters.data].filter(Boolean);
  document.getElementById('categories').innerHTML=categories.map(cat=>{
   const n=data.filter(o=>norm(cat.name)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(cat.name)).length;
-  return '<button type="button" class="cat '+(filters.tipo===cat.name?'active':'')+'" data-cat="'+esc(cat.name)+'"><span class="ico">'+cat.icon+'</span><strong><span>'+esc(cat.name)+'</span><b>'+(occurrences.length?n:'—')+'</b></strong></button>';
+  return '<button type="button" class="cat '+(filters.tipo===cat.name?'active':'')+'" data-cat="'+esc(cat.name)+'"><span class="ico">'+cat.icon+'</span><strong><span>'+esc(cat.label||cat.name)+'</span><b>'+(occurrences.length?n:'—')+'</b></strong></button>';
  }).join('');
  document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>setFilter('tipo',b.dataset.cat)));
 
