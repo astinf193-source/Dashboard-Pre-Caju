@@ -403,9 +403,12 @@ function dateKey(v){
 }
 
 function preventionKind(o){
- const source=norm([o.tipo,o.classificacao,o.relato].filter(Boolean).join(' '));
- if(/prevenção\s+ativa|prevencao\s+ativa/.test(source))return 'ativa';
- if(/prevenção\s+reativa|prevencao\s+reativa/.test(source))return 'reativa';
+ if(norm(o.tipo)!=='prevenção')return '';
+ const relato=norm(o.relato||'');
+ // Ativa: ações antecipadas, rondas, sinalização e pontos-base.
+ if(/prevenç(?:ão|ões)\\s+ativ[ao]s?|prevenção ativa|rondas?|placas? de sinalização|ponto base/.test(relato))return 'ativa';
+ // Reativa: perigo ou incidente já iniciado, exigindo intervenção da equipe.
+ if(/prevenç(?:ão|ões)\\s+reativ[ao]s?|alto risco|risco iminente|situação de perigo|perigo já iniciado|acidentad[oa]|vítima de afogamento|em processo de afogamento|incidente em andamento/.test(relato))return 'reativa';
  return '';
 }
 function isEventPrevention(o){return norm(o.tipo)==='prevenção'&&!preventionKind(o);}
@@ -523,7 +526,7 @@ async function loadTestData(){
    gravidade:({'Baixa':'Leve','Média':'Moderada','Media':'Moderada','Alta':'Grave'}[String(r[col('GRAVIDADE')]||'').trim()]||String(r[col('GRAVIDADE')]||'').trim()),
    data:String(r[col('Data do Serviço')]||'').trim(),
    relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||''),
-   classificacao:headers.map((h,i)=>/prevenção|prevencao|classificação|classificacao/i.test(h)?String(r[i]||''):'').filter(Boolean).join(' ')+' '+r.join(' ')
+   classificacao:''
   }));
   Object.keys(filters).forEach(k=>filters[k]=null);
   render();
