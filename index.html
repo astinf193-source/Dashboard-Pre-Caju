@@ -355,11 +355,34 @@
  }
 }
 
+ 
+.integration-panel{margin:12px 0}
+.integration-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.integration-heading h2{margin:0 0 6px}.integration-heading p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+.integration-badge{white-space:nowrap;border:1px solid #a87822;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:800;color:#ffd27a}
+.integration-badge.connected{border-color:#1a9c77;color:#8ef0c9}
+.integration-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.integration-controls input{flex:1;min-width:230px;background:#04182d;border:1px solid #326487;border-radius:7px;padding:11px;color:#fff}
+.integration-link{color:#77dcff;font-size:12px;font-weight:700;text-decoration:none}
+.integration-status{margin-top:8px;color:#a9c4d9;font-size:11px;line-height:1.5}
+.ops-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.ops-card{background:#06264a;border:1px solid #168ee9;border-radius:9px;padding:13px;text-align:center}
+.ops-card span{display:block;color:#c5d9e9;font-size:10px;font-weight:800;letter-spacing:.4px}
+.ops-card strong{display:block;color:var(--gold);font-size:27px;margin-top:7px}
+@media(max-width:650px){.integration-heading{display:block}.integration-badge{display:inline-block;margin-top:8px}.integration-controls input{min-width:100%}.ops-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style></head>
 <body>
 <main id="app" class="wrap">
 <header class="head"><img class="logo" src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/logo-precaju.png" alt="Pré-Caju"><div class="title"><div class="eyebrow">CORPO DE BOMBEIROS MILITAR · SERGIPE</div><h1>OPERAÇÃO <span>PRÉ-CAJU 2026</span></h1><p>SEGURANÇA, VIDA E TRANQUILIDADE · ORLA DE ATALAIA — ARACAJU/SE</p></div><img class="logo" src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/logo-cbmse.png" alt="Brasão CBMSE"></header>
 <div class="toolbar"><div><div><b>Dashboard Operacional</b></div><div id="status" class="status">Estrutura visual pronta · aguardando integração com Google Sheets</div></div><button id="refresh" type="button">↻ Atualizar visualização</button></div>
+
+<section class="panel integration-panel">
+ <div class="integration-heading"><div><h2>Integração do sistema de registros</h2><p>Conecte o Google Apps Script para receber os dados de efetivo, viaturas, alterações e ocorrências.</p></div><span id="integrationBadge" class="integration-badge">NÃO CONECTADO</span></div>
+ <div class="integration-controls"><input id="scriptUrl" type="url" placeholder="Cole aqui a URL do Web App do Google Apps Script" aria-label="URL do sistema de registros"><button id="saveIntegration" type="button">Conectar sistema</button><a id="openRegistration" class="integration-link hidden" href="#" target="_blank" rel="noopener noreferrer">Abrir sistema de registros ↗</a></div>
+ <div id="integrationStatus" class="integration-status">A dashboard continuará exibindo os dados de demonstração até a conexão com a planilha operacional.</div>
+</section>
+
 
 <section class="overview-layout">
  <section class="panel occurrence-panel"><h2>Ocorrências</h2><div id="categories" class="categories"></div><div id="secondaryPrevention" class="secondary-prevention"><div class="prevention-secondary"><span class="prevention-symbol">↗</span><span class="prevention-copy"><b>PREVENÇÃO ATIVA NAS PRAIAS</b><small>Ações antecipadas de identificação e neutralização de riscos</small></span><strong class="prevention-count" id="preventionActiveCount">—</strong></div><div class="prevention-secondary"><span class="prevention-symbol">↘</span><span class="prevention-copy"><b>PREVENÇÃO REATIVA NAS PRAIAS</b><small>Intervenções diante de incidentes ou situações de perigo iniciadas</small></span><strong class="prevention-count" id="preventionReactiveCount">—</strong></div></div></section>
@@ -377,6 +400,12 @@
  </section>
 </section>
 <section class="panel resources-panel"><h2>Recursos empregados</h2><div id="resourceTypes" class="resource-grid"></div></section>
+<section class="panel resources-panel"><h2>Efetivo e alterações do dia</h2><div class="ops-grid">
+ <article class="ops-card"><span>EFETIVO PREVISTO</span><strong id="staffPlanned">—</strong></article>
+ <article class="ops-card"><span>EFETIVO APRESENTADO</span><strong id="staffPresent">—</strong></article>
+ <article class="ops-card"><span>FALTAS REGISTRADAS</span><strong id="staffAbsent">—</strong></article>
+ <article class="ops-card"><span>ALTERAÇÕES DO DIA</span><strong id="staffChanges">—</strong></article>
+</div></section>
 </main>
 <script>
 window.addEventListener('error',e=>{const s=document.getElementById('status');if(s)s.textContent='Erro no JavaScript: '+(e.message||'falha de execução');});
@@ -390,8 +419,8 @@ const categories=[
 ];
 const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
 
-// A integração com a planilha será conectada posteriormente.
 let occurrences=[];
+let operationalSummary=null;
 const filters={tipo:null,local:null,setor:null,gravidade:null,data:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>String(v??'').trim().toLocaleLowerCase('pt-BR');
@@ -477,10 +506,24 @@ function render(){
  }));
  document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').length:'—';
 document.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').length:'—';
+ const counts=operationalSummary&&operationalSummary.summary?operationalSummary.summary:null;
+ const resourceValues={
+  'Terrestre':counts?counts.viaturasTerrestres:null,
+  'Drone':counts?counts.drones:null,
+  'Aquática':counts?counts.recursosAquaticos:null,
+  'Militares':counts?counts.efetivoApresentado:null,
+  'Faltas':counts?counts.faltas:null
+ };
  const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
- document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>—</strong><span>'+name+'</span></div>').join('');
+ document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>'+(resourceValues[name]===null?'—':resourceValues[name]===undefined?'—':resourceValues[name])+'</strong><span>'+name+'</span></div>').join('');
+ const summary=counts;
+ const setMetric=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value===undefined||value===null?'—':Number(value).toLocaleString('pt-BR');};
+ setMetric('staffPlanned',summary&&summary.efetivoPrevisto);
+ setMetric('staffPresent',summary&&summary.efetivoApresentado);
+ setMetric('staffAbsent',summary&&summary.faltas);
+ setMetric('staffChanges',summary&&summary.alteracoes);
  const status=document.getElementById('status');
- if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'MODO DE TESTE · dados históricos de 2025';
+ if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):(operationalSummary?'● DADOS OPERACIONAIS INTEGRADOS':'MODO DE DEMONSTRAÇÃO · dados históricos de 2025');
 }
 function parseCSV(text){
  const rows=[];let row=[],field='',quoted=false;
@@ -538,8 +581,64 @@ async function loadTestData(){
   render();
  }
 }
-document.getElementById('refresh').addEventListener('click',loadTestData);
-loadTestData();
+
+function jsonpRequest(endpoint){
+ return new Promise((resolve,reject)=>{
+  const callback='__precajuDashboard_'+Date.now()+'_'+Math.floor(Math.random()*10000);
+  const script=document.createElement('script');
+  let settled=false;
+  const finish=(error,data)=>{if(settled)return;settled=true;clearTimeout(timer);delete window[callback];script.remove();error?reject(error):resolve(data)};
+  window[callback]=data=>finish(null,data);
+  script.onerror=()=>finish(new Error('Não foi possível acessar o Web App do Apps Script.'));
+  const timer=setTimeout(()=>finish(new Error('Tempo limite ao consultar o sistema de registros.')),15000);
+  script.src=endpoint+(endpoint.includes('?')?'&':'?')+'mode=dashboard&callback='+encodeURIComponent(callback)+'&_='+Date.now();
+  document.head.appendChild(script);
+ });
+}
+function setIntegrationState(connected,message){
+ const badge=document.getElementById('integrationBadge'),status=document.getElementById('integrationStatus');
+ badge.textContent=connected?'CONECTADO':'NÃO CONECTADO';
+ badge.classList.toggle('connected',!!connected);
+ status.textContent=message;
+ const open=document.getElementById('openRegistration');
+ if(connected){open.href=document.getElementById('scriptUrl').value.trim();open.classList.remove('hidden')}
+ else open.classList.add('hidden');
+}
+async function loadLiveData(){
+ const input=document.getElementById('scriptUrl');
+ let endpoint='';
+ try{endpoint=input.value.trim()||localStorage.getItem('precaju_apps_script_url')||''}catch(e){}
+ if(!endpoint){operationalSummary=null;setIntegrationState(false,'Informe a URL do Web App do Apps Script após publicar o sistema. Exibindo dados históricos de demonstração.');await loadTestData();return}
+ input.value=endpoint;
+ setIntegrationState(false,'Conectando ao sistema de registros...');
+ try{
+  const data=await jsonpRequest(endpoint);
+  if(!data||!data.success)throw new Error(data&&data.error?data.error:'Resposta inválida do sistema.');
+  operationalSummary=data;
+  occurrences=Array.isArray(data.occurrences)?data.occurrences:[];
+  Object.keys(filters).forEach(k=>filters[k]=null);
+  render();
+  const updated=data.updatedAt?new Date(data.updatedAt).toLocaleString('pt-BR'):'agora';
+  setIntegrationState(true,'Dados operacionais recebidos com sucesso. Última atualização: '+updated+'. Efetivo, viaturas, alterações e ocorrências consolidados.');
+  const status=document.getElementById('status');
+  if(status)status.textContent='● SISTEMA DE REGISTROS CONECTADO · atualização '+updated;
+ }catch(error){
+  operationalSummary=null;
+  setIntegrationState(false,'Falha na integração: '+error.message+' Confira a URL e a publicação do Apps Script.');
+  const status=document.getElementById('status');if(status)status.textContent='Falha na conexão com o sistema de registros.';
+ }
+}
+document.getElementById('saveIntegration').addEventListener('click',()=>{
+ const value=document.getElementById('scriptUrl').value.trim();
+ if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec(?:\?.*)?$/.test(value)){
+  setIntegrationState(false,'Informe uma URL válida de implantação do Google Apps Script, terminada em /exec.');return;
+ }
+ try{localStorage.setItem('precaju_apps_script_url',value)}catch(e){}
+ loadLiveData();
+});
+document.getElementById('refresh').addEventListener('click',loadLiveData);
+try{const saved=localStorage.getItem('precaju_apps_script_url');if(saved)document.getElementById('scriptUrl').value=saved}catch(e){}
+loadLiveData();
 })();
 </script>
 </body></html>
