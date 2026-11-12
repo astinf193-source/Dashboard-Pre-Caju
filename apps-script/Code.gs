@@ -61,12 +61,13 @@ function checkLogin(name,key){var sh=SpreadsheetApp.getActiveSpreadsheet().getSh
   var data=sh.getDataRange().getValues(),id=normalizeMatricula_(name);
   for(var i=1;i<data.length;i++)if(normalizeMatricula_(data[i][4])===id&&String(data[i][5]||'').trim()===String(key||'').trim())
     var token=createSession_(data[i]);
-    return {success:true,token:token,user:String(data[i][1]||'')+' '+String(data[i][2]||''),matricula:String(data[i][4]||''),zona:data[i][6],local:data[i][9],funcao:data[i][7],supervisor:data[i][8],checkin:isCheckedIn(data[i][4])};
+    return {success:true,token:token,user:String(data[i][1]||'')+' '+String(data[i][2]||''),matricula:String(data[i][4]||''),zona:data[i][6],local:data[i][9],funcao:data[i][7],supervisor:isSupervisor_(data[i][8]),checkin:isCheckedIn(data[i][4])};
   return {success:false,message:'Matrícula e/ou credencial inválidas.'};}
+function isSupervisor_(value) { return value === true || ['true','sim','1','yes'].indexOf(normalizeText_(value)) >= 0; }
 function createSession_(userRow) {
   var token=Utilities.getUuid();
   var session={matricula:normalizeMatricula_(userRow[4]),user:String(userRow[1]||'')+' '+String(userRow[2]||''),
-    zona:String(userRow[6]||''),supervisor:userRow[8]===true||['true','sim','1','yes'].indexOf(normalizeText_(userRow[8]))>=0};
+    zona:String(userRow[6]||''),supervisor:isSupervisor_(userRow[8])};
   CacheService.getScriptCache().put('precaju_session_'+token,JSON.stringify(session),21600);
   return token;
 }
