@@ -66,7 +66,7 @@ function checkLogin(name,key){var sh=SpreadsheetApp.getActiveSpreadsheet().getSh
 function createSession_(userRow) {
   var token=Utilities.getUuid();
   var session={matricula:normalizeMatricula_(userRow[4]),user:String(userRow[1]||'')+' '+String(userRow[2]||''),
-    zona:String(userRow[6]||''),supervisor:String(userRow[8]).toLowerCase()==='true'||userRow[8]===true};
+    zona:String(userRow[6]||''),supervisor:userRow[8]===true||['true','sim','1','yes'].indexOf(normalizeText_(userRow[8]))>=0};
   CacheService.getScriptCache().put('precaju_session_'+token,JSON.stringify(session),21600);
   return token;
 }
