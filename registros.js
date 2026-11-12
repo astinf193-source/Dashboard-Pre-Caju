@@ -13,7 +13,7 @@ async function reload(){
  db.from('occurrences').select('occurrence_date,type,reference_point,sector,severity').order('occurrence_date',{ascending:false}).limit(15),
  db.from('personnel').select('id,registration,full_name,active').order('created_at',{ascending:false}).limit(15),
  db.from('vehicles').select('code,category,status,updated_at').order('updated_at',{ascending:false}).limit(15),
- db.from('daily_assignments').select('service_date,duty_status,personnel:personnel_id(full_name)').order('service_date',{ascending:false}).limit(15)
+ db.from('daily_assignments').select('service_date,duty_status,personnel(full_name)').order('service_date',{ascending:false}).limit(15)
  ]);
  const err=[o,p,v,a].find(x=>x.error);if(err)throw err.error;
  const rows=[
