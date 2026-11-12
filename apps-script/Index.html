@@ -342,6 +342,7 @@
     funcao: "",
     supervisor: false,
     checkin: false,
+    token: "",
   };
 
    function handleLogin() {
@@ -352,6 +353,7 @@
 
     google.script.run.withSuccessHandler(function(response) {
       if (response.success) {
+        appState.token = response.token;
         appState.user = response.user;
         appState.matricula = response.matricula;
         appState.zona = response.zona;
@@ -439,7 +441,7 @@
             localSelect.appendChild(option);
           });
         })
-        .getLocationsByZone(selectedZone);
+        .getLocationsByZone(appState.token, selectedZone);
     });
   }
 
@@ -469,7 +471,7 @@
           userSelect.appendChild(option);
         });
       })
-        .getUsersByZone(appState.zona);
+        .getUsersByZone(appState.token, appState.zona);
   }
 
 function loadUserEntries() {
@@ -562,7 +564,7 @@ function loadUserEntries() {
     .withFailureHandler(function(err) {
       container.innerHTML = `<div class="empty-state" style="color: #d93025;">Erro ao carregar registros: ${err.message}</div>`;
     })
-    .getSubmitsbyUser(appState.matricula); // Pass user's matricula from appState
+    .getSubmitsbyUser(appState.token); // Pass user's matricula from appState
 }
 
 function loadConsulta() {
@@ -617,7 +619,7 @@ function loadConsulta() {
     .withFailureHandler(function(err) {
       container.innerHTML = `<div class="empty-state" style="color: #d93025;">Erro ao carregar registros: ${err.message}</div>`;
     })
-    .getSubmitsbyZone(appState.zona); // Pass user's matricula from appState
+    .getSubmitsbyZone(appState.token, appState.zona); // Pass user's matricula from appState
 }
 
 function loadAvisos() {
@@ -669,7 +671,7 @@ function loadAvisos() {
     .withFailureHandler(function(err) {
       container.innerHTML = `<div class="empty-state" style="color: #d93025;">Erro ao carregar registros: ${err.message}</div>`;
     })
-    .getAvisos(appState.zona);
+    .getAvisos(appState.token);
 }
 
 function loadMilitaresZona() {
@@ -709,7 +711,7 @@ function loadMilitaresZona() {
     .withFailureHandler(function(err) {
       container.innerHTML = `<div class="empty-state" style="color: #d93025;">Erro ao carregar registros: ${err.message}</div>`;
     })
-    .getUserWithCheckinByZone(appState.zona);
+    .getUserWithCheckinByZone(appState.token, appState.zona);
 }
 
 // Helper to prevent XSS attacks when displaying user-generated text
@@ -795,7 +797,7 @@ function submitOcorrencia() {
       statusDiv.innerText = "Erro de conexão/servidor: " + error.message;
       hideLoading();
     })
-    .saveResponse(appState.user, appState.matricula, ans1, ans2, ans3, ans4, ans5, ans6);
+    .saveResponse(appState.token, ans1, ans2, ans3, ans4, ans5, ans6);
 }
 
 function submitAltercaoMilitar() {
@@ -847,7 +849,7 @@ function submitAltercaoMilitar() {
       statusDiv.innerText = "Erro de conexão/servidor: " + error.message;
       hideLoading();
     })
-    .saveAlteracao(appState.user,appState.matricula, ans1, ans2, ans3);
+    .saveAlteracao(appState.token, ans1, ans2, ans3);
 }
 
 function submitViatura() {
@@ -901,7 +903,7 @@ function submitViatura() {
       statusDiv.innerText = "Erro de conexão/servidor: " + error.message;
       hideLoading();
     })
-    .saveViatura(appState.user,appState.matricula, ans1, ans2, ans3);
+    .saveViatura(appState.token, ans1, ans2, ans3);
 }
 
 function submitAviso() {
@@ -977,7 +979,7 @@ function checkIn() {
       if (checkinBtn) checkinBtn.disabled = false;
       alert("Não foi possível registrar a assunção de serviço.");
     })
-    .saveCheckIn(appState.user, appState.matricula);
+    .saveCheckIn(appState.token);
 }
 // --- Helper Functions to Control Overlay ---
 
