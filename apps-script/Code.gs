@@ -60,25 +60,65 @@ function normalizeSeverity_(v){var s=normalizeText_(v);if(s==='baixa'||s==='leve
 function checkLogin(name,key){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users');if(!sh)return {success:false,message:'A aba Users não foi encontrada.'};
   var data=sh.getDataRange().getValues(),id=normalizeMatricula_(name);
   for(var i=1;i<data.length;i++)if(normalizeMatricula_(data[i][4])===id&&String(data[i][5]||'').trim()===String(key||'').trim())
-    return {success:true,user:String(data[i][1]||'')+' '+String(data[i][2]||''),matricula:String(data[i][4]||''),zona:data[i][6],local:data[i][9],funcao:data[i][7],supervisor:data[i][8],checkin:isCheckedIn(data[i][4])};
+    var token=createSession_(data[i]);
+    return {success:true,token:token,user:String(data[i][1]||'')+' '+String(data[i][2]||''),matricula:String(data[i][4]||''),zona:data[i][6],local:data[i][9],funcao:data[i][7],supervisor:data[i][8],checkin:isCheckedIn(data[i][4])};
   return {success:false,message:'Matrícula e/ou credencial inválidas.'};}
-function saveResponse(u,m,a1,a2,a3,a4,a5,a6){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Ocorrencias');if(!sh)throw new Error('A aba Ocorrencias não foi encontrada.');sh.appendRow([new Date(),u,m,a1,a2,a3,a4,a6,a5]);return {success:true};}
-function saveAlteracao(u,m,tipo,militar,relato){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Alteracoes Militares');if(!sh)throw new Error('A aba Alteracoes Militares não foi encontrada.');sh.appendRow([new Date(),u,m,tipo,militar,relato]);return {success:true};}
-function saveViatura(u,m,tipo,prefixo,obs){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Viaturas');if(!sh)throw new Error('A aba Viaturas não foi encontrada.');sh.appendRow([new Date(),u,m,tipo,prefixo,obs]);return {success:true};}
-function saveCheckIn(u,m){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Checkins');if(!sh)throw new Error('A aba Checkins não foi encontrada.');sh.appendRow([new Date(),u,"'"+String(m)]);return {success:true};}
-function saveAviso(u,m,z,a){var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Avisos');if(!sh)throw new Error('A aba Avisos não foi encontrada.');sh.appendRow([new Date(),u,"'"+String(m),z,a]);return {success:true};}
+function createSession_(userRow) {
+  var token=Utilities.getUuid();
+  var session={matricula:normalizeMatricula_(userRow[4]),user:String(userRow[1]||'')+' '+String(userRow[2]||''),
+    zona:String(userRow[6]||''),supervisor:String(userRow[8]).toLowerCase()==='true'||userRow[8]===true};
+  CacheService.getScriptCache().put('precaju_session_'+token,JSON.stringify(session),21600);
+  return token;
+}
+function requireSession_(token) {
+  if(!token)throw new Error('Sessão não informada. Faça login novamente.');
+  var raw=CacheService.getScriptCache().get('precaju_session_'+String(token));
+  if(!raw)throw new Error('Sessão expirada. Faça login novamente.');
+  return JSON.parse(raw);
+}
+function requireSupervisor_(token) {
+  var session=requireSession_(token);
+  if(!session.supervisor)throw new Error('Acesso restrito à supervisão.');
+  return session;
+}
+function saveResponse(token,a1,a2,a3,a4,a5,a6) {
+  var session=requireSession_(token),sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Ocorrencias');
+  if(!sh)throw new Error('A aba Ocorrencias não foi encontrada.');
+  sh.appendRow([new Date(),session.user,session.matricula,a1,a2,a3,a4,a6,a5]);return {success:true};
+}
+function saveAlteracao(token,tipo,militar,relato) {
+  var session=requireSupervisor_(token),sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Alteracoes Militares');
+  if(!sh)throw new Error('A aba Alteracoes Militares não foi encontrada.');
+  sh.appendRow([new Date(),session.user,session.matricula,tipo,militar,relato]);return {success:true};
+}
+function saveViatura(token,tipo,prefixo,obs) {
+  var session=requireSession_(token),sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Viaturas');
+  if(!sh)throw new Error('A aba Viaturas não foi encontrada.');
+  sh.appendRow([new Date(),session.user,session.matricula,tipo,prefixo,obs]);return {success:true};
+}
+function saveCheckIn(token) {
+  var session=requireSession_(token),sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Checkins');
+  if(!sh)throw new Error('A aba Checkins não foi encontrada.');
+  if(isCheckedIn(session.matricula))return {success:true,alreadyRegistered:true};
+  sh.appendRow([new Date(),session.user,"'"+session.matricula]);return {success:true};
+}
+function saveAviso(token,aviso) {
+  var session=requireSupervisor_(token),sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Avisos');
+  if(!sh)throw new Error('A aba Avisos não foi encontrada.');
+  sh.appendRow([new Date(),session.user,"'"+session.matricula,session.zona,aviso]);return {success:true};
+}
 function isCheckedIn(m){var rows=sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Checkins'),tz=Session.getScriptTimeZone()||'America/Maceio',today=dateKey_(new Date(),tz),id=normalizeMatricula_(m);
   return rows.slice(1).some(function(r){return dateKey_(r[0],tz)===today&&normalizeMatricula_(r[2])===id;});}
 function includePage(name){return HtmlService.createHtmlOutputFromFile(name).getContent();}
-function getLocationsByZone(z){return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Locais').slice(1).filter(function(r){return String(r[0]||'').trim()===String(z||'').trim();}).map(function(r){return r[1];});}
-function getUsersByZone(z){return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Users').slice(1).filter(function(r){return String(r[6]||'').trim()===String(z||'').trim();}).sort(function(a,b){return (Number(a[0])||0)-(Number(b[0])||0)||String(a[2]||'').localeCompare(String(b[2]||''),'pt-BR');}).map(function(r){return String(r[1]||'')+' '+String(r[2]||'');});}
-function getUserWithCheckinByZone(z){return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Users').slice(1).filter(function(r){return String(r[6]||'').trim()===String(z||'').trim();}).sort(function(a,b){return (Number(a[0])||0)-(Number(b[0])||0)||String(a[2]||'').localeCompare(String(b[2]||''),'pt-BR');}).map(function(r){return {militar:String(r[1]||'')+' '+String(r[2]||''),checkin:isCheckedIn(r[4])};});}
+function getLocationsByZone(token,z){requireSession_(token);return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Locais').slice(1).filter(function(r){return String(r[0]||'').trim()===String(z||'').trim();}).map(function(r){return r[1];});}
+function getUsersByZone(token,z){requireSupervisor_(token);return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Users').slice(1).filter(function(r){return String(r[6]||'').trim()===String(z||'').trim();}).sort(function(a,b){return (Number(a[0])||0)-(Number(b[0])||0)||String(a[2]||'').localeCompare(String(b[2]||''),'pt-BR');}).map(function(r){return String(r[1]||'')+' '+String(r[2]||'');});}
+function getUserWithCheckinByZone(token,z){requireSupervisor_(token);return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Users').slice(1).filter(function(r){return String(r[6]||'').trim()===String(z||'').trim();}).sort(function(a,b){return (Number(a[0])||0)-(Number(b[0])||0)||String(a[2]||'').localeCompare(String(b[2]||''),'pt-BR');}).map(function(r){return {militar:String(r[1]||'')+' '+String(r[2]||''),checkin:isCheckedIn(r[4])};});}
 function serialDate_(v){return v instanceof Date?v.toISOString():String(v||'');}
-function getSubmitsbyZone(z){return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Ocorrencias').slice(1).filter(function(r){return z==='COMANDO E CONTROLE'||z==='INFORMAÇÃO'||String(r[3]||'').trim()===String(z||'').trim();}).map(function(r){return {classe:'Ocorrencia',time:serialDate_(r[0]),militar:r[1],zona:r[3],local:r[4],tipo:r[5],gravidade:r[6],qtd:r[7],relato:r[8]};}).sort(function(a,b){return new Date(b.time)-new Date(a.time);});}
-function getSubmitsbyUser(user){var id=normalizeMatricula_(user),ss=SpreadsheetApp.getActiveSpreadsheet(),out=[];
+function getSubmitsbyZone(token,z){requireSupervisor_(token);return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Ocorrencias').slice(1).filter(function(r){return z==='COMANDO E CONTROLE'||z==='INFORMAÇÃO'||String(r[3]||'').trim()===String(z||'').trim();}).map(function(r){return {classe:'Ocorrencia',time:serialDate_(r[0]),militar:r[1],zona:r[3],local:r[4],tipo:r[5],gravidade:r[6],qtd:r[7],relato:r[8]};}).sort(function(a,b){return new Date(b.time)-new Date(a.time);});}
+function getSubmitsbyUser(token){var session=requireSession_(token),id=session.matricula,ss=SpreadsheetApp.getActiveSpreadsheet(),out=[];
   sheetRows_(ss,'Ocorrencias').slice(1).filter(function(r){return normalizeMatricula_(r[2])===id;}).forEach(function(r){out.push({classe:'Ocorrencia',time:serialDate_(r[0]),zona:r[3],local:r[4],tipo:r[5],gravidade:r[6],qtd:r[7],relato:r[8]});});
   sheetRows_(ss,'Alteracoes Militares').slice(1).filter(function(r){return normalizeMatricula_(r[2])===id;}).forEach(function(r){out.push({classe:'AlteracaoMilitar',time:serialDate_(r[0]),militar:r[4],tipo:r[3],relato:r[5]});});
   sheetRows_(ss,'Checkins').slice(1).filter(function(r){return normalizeMatricula_(r[2])===id;}).forEach(function(r){out.push({classe:'Checkin',time:serialDate_(r[0])});});
   sheetRows_(ss,'Viaturas').slice(1).filter(function(r){return normalizeMatricula_(r[2])===id;}).forEach(function(r){out.push({classe:'Viatura',time:serialDate_(r[0]),viatura:r[4],tipo:r[3],relato:r[5]});});
   return out.sort(function(a,b){return new Date(b.time)-new Date(a.time);});}
-function getAvisos(z){return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Avisos').slice(1).filter(function(r){return r[3]==='COMANDO E CONTROLE'||r[3]===z;}).map(function(r){return {time:serialDate_(r[0]),militar:r[1],zona:r[3],aviso:r[4]};}).sort(function(a,b){return new Date(b.time)-new Date(a.time);});}
+function getAvisos(token){var session=requireSession_(token);var z=session.zona;return sheetRows_(SpreadsheetApp.getActiveSpreadsheet(),'Avisos').slice(1).filter(function(r){return r[3]==='COMANDO E CONTROLE'||r[3]===z;}).map(function(r){return {time:serialDate_(r[0]),militar:r[1],zona:r[3],aviso:r[4]};}).sort(function(a,b){return new Date(b.time)-new Date(a.time);});}
