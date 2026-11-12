@@ -1,0 +1,35 @@
+<div class="card">
+  <div class="card-header">
+    <h2>Bem Vindo, <span id="userDisplayName"></span></h2>
+    <p class="card-meta">
+      Funcao: <span id="userFunction"></span><br>
+      Setor: <span id="userZone"></span><br>
+      Local: <span id="userLocation"></span>
+    </p>
+  </div>
+  <div class="card-body">
+    <h3 style="text-align: center;">Registro de Alteração de Militar</h3>
+     
+    <label for="tipoSelect">Tipo:</label>
+    <select id="tipoSelect">
+        <option selected disabled value=''>Selecione o Tipo</option>
+        <option>Falta</option>
+        <option>Mudança de Local</option>
+        <option>Outro</option>
+    </select>
+
+    <label for="userSelect">Militar:</label>
+    <select id="userSelect">
+        <option selected disabled value=''>Selecione o Militar</option>
+    </select>
+    
+    <label for=relatoText >Relato</label>
+    <textarea id="relatoText" rows="3" placeholder="Escreva seu relato aqui."></textarea>
+
+    <div id="formStatus" style="margin-top:10px;"></div>
+    
+    <button style="margin-bottom: 12px;" onclick="submitAltercaoMilitar()">Enviar</button>
+    <button class="btn-cancel" onclick="loadPage('Menu')">Cancelar</button>
+  </div>
+</div>
+
