@@ -355,11 +355,11 @@
  }
 }
 
-</style></head>
+\n.login{max-width:390px;margin:12vh auto;padding:26px;background:#082746;border:1px solid var(--line);border-radius:14px}.login h2{margin-top:0}.login input{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #326487;border-radius:7px;background:#04182d;color:white}.hidden{display:none!important}\n</style></head>
 <body>
-<main id="app" class="wrap">
+<section id="loginScreen" class="login"><h2>Acesso operacional</h2><p>Entre com sua conta individual do Pré-Caju.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="E-mail institucional" required autocomplete="username"><input id="loginPassword" type="password" placeholder="Senha" required autocomplete="current-password"><button id="loginButton" type="submit">Entrar</button></form><p id="loginMessage" class="status"></p></section>\n<main id="app" class="wrap hidden">
 <header class="head"><img class="logo" src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/logo-precaju.png" alt="Pré-Caju"><div class="title"><div class="eyebrow">CORPO DE BOMBEIROS MILITAR · SERGIPE</div><h1>OPERAÇÃO <span>PRÉ-CAJU 2026</span></h1><p>SEGURANÇA, VIDA E TRANQUILIDADE · ORLA DE ATALAIA — ARACAJU/SE</p></div><img class="logo" src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/logo-cbmse.png" alt="Brasão CBMSE"></header>
-<div class="toolbar"><div><div><b>Dashboard Operacional</b></div><div id="status" class="status">Estrutura visual pronta · aguardando integração com Google Sheets</div></div><button id="refresh" type="button">↻ Atualizar visualização</button></div>
+<div class="toolbar"><div><div><b>Dashboard Operacional</b></div><div id="status" class="status">Acesso restrito · conecte-se para visualizar os dados operacionais</div><div id="userIdentity" class="status"></div></div><div><a href="registros.html" style="color:#8fe8ff;margin-right:10px">Registros operacionais</a><button id="refresh" type="button">↻ Atualizar</button> <button id="logoutButton" type="button">Sair</button></div></div>
 
 <section class="overview-layout">
  <section class="panel occurrence-panel"><h2>Ocorrências</h2><div id="categories" class="categories"></div><div id="secondaryPrevention" class="secondary-prevention"><div class="prevention-secondary"><span class="prevention-symbol">↗</span><span class="prevention-copy"><b>PREVENÇÃO ATIVA NAS PRAIAS</b><small>Ações antecipadas de identificação e neutralização de riscos</small></span><strong class="prevention-count" id="preventionActiveCount">—</strong></div><div class="prevention-secondary"><span class="prevention-symbol">↘</span><span class="prevention-copy"><b>PREVENÇÃO REATIVA NAS PRAIAS</b><small>Intervenções diante de incidentes ou situações de perigo iniciadas</small></span><strong class="prevention-count" id="preventionReactiveCount">—</strong></div></div></section>
@@ -370,10 +370,10 @@
   </div>
   <article class="data-card dates-card"><h3>OCORRÊNCIAS POR DATA</h3><div class="date-rows" id="dateRows"></div></article>
   <div class="detail-grid">
-   <article class="data-card location-card"><h3>SETOR DAS OCORRÊNCIAS</h3><div class="location-chart-wrap"><div id="locationPie" class="location-pie" role="img" aria-label="Gráfico de ocorrências por local"></div><div id="locations" class="location-list location-legend"><div class="empty">Aguardando locais na planilha.</div></div></div></article>
+   <article class="data-card location-card"><h3>SETOR DAS OCORRÊNCIAS</h3><div class="location-chart-wrap"><div id="locationPie" class="location-pie" role="img" aria-label="Gráfico de ocorrências por local"></div><div id="locations" class="location-list location-legend"><div class="empty">Aguardando dados do banco.</div></div></div></article>
    <article class="data-card"><h3>GRAVIDADE DAS OCORRÊNCIAS</h3><div id="severity" class="severity-list"></div></article>
   </div>
-  <article class="data-card reports-card"><div class="reports-heading"><h3>RELATO DAS OCORRÊNCIAS</h3><span id="reportFilter">Todas as ocorrências</span></div><div id="reports" class="reports-scroll"><div class="empty">Aguardando integração da planilha.</div></div></article>
+  <article class="data-card reports-card"><div class="reports-heading"><h3>RELATO DAS OCORRÊNCIAS</h3><span id="reportFilter">Todas as ocorrências</span></div><div id="reports" class="reports-scroll"><div class="empty">Aguardando conexão com o banco.</div></div></article>
  </section>
 </section>
 <section class="panel resources-panel"><h2>Recursos empregados</h2><div id="resourceTypes" class="resource-grid"></div></section>
@@ -390,7 +390,7 @@ const categories=[
 ];
 const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
 
-// A integração com a planilha será conectada posteriormente.
+// Os dados serão carregados do Supabase após autenticação.
 let occurrences=[];
 const filters={tipo:null,local:null,setor:null,gravidade:null,data:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -451,7 +451,7 @@ function render(){
   const label=new Date(Number(year),Number(month)-1,Number(day)).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
   const n=data.filter(o=>dateKey(o.data)===key).length;
   return '<button type="button" class="date-row '+(filters.data===key?'selected-filter':'')+'" data-date="'+key+'"><span>'+label+'</span><strong>'+n+'</strong></button>';
- }).join(''):'<div class="empty">Aguardando datas na planilha.</div>';
+ }).join(''):'<div class="empty">Aguardando dados do banco.</div>';
  document.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>setFilter('data',b.dataset.date)));
  const locs={};data.filter(o=>norm(o.tipo)!=='prevenção'&&norm(o.tipo)!=='prevenção ativa'&&norm(o.tipo)!=='prevenção reativa').forEach(o=>{const l=o.setor||'Setor não informado';locs[l]=(locs[l]||0)+1;});
  const locationEntries=Object.entries(locs).sort((x,y)=>y[1]-x[1]);
@@ -470,7 +470,7 @@ function render(){
  }).join('');
  document.querySelectorAll('[data-severity]').forEach(b=>b.addEventListener('click',()=>setFilter('gravidade',b.dataset.severity)));
  document.getElementById('reportFilter').textContent=filterNames.length?'Filtros: '+filterNames.join(' · '):'Todas as ocorrências';
- document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+' · '+esc(o.gravidade||'Gravidade não informada')+'</b><span class="report-full">'+esc(o.relato||'Relato não informado')+'</span></button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
+ document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+' · '+esc(o.gravidade||'Gravidade não informada')+'</b><span class="report-full">'+esc(o.relato||'Relato não informado')+'</span></button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a conexão com o banco.')+'</div>';
  document.querySelectorAll('[data-report]').forEach(b=>b.addEventListener('click',()=>{
   const o=data[Number(b.dataset.report)];if(!o)return;
   filters.tipo=o.tipo||null;filters.local=o.local||null;filters.setor=o.setor||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
@@ -480,7 +480,7 @@ document.getElementById('preventionReactiveCount').textContent=occurrences.lengt
  const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
  document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>—</strong><span>'+name+'</span></div>').join('');
  const status=document.getElementById('status');
- if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'MODO DE TESTE · dados históricos de 2025';
+ if(status && !window.CBMSE_DB) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'Aguardando conexão segura';
 }
 function parseCSV(text){
  const rows=[];let row=[],field='',quoted=false;
@@ -503,43 +503,8 @@ function safeReport(value){
  t=t.replace(/(Paciente|Vítima|Vitima)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+){1,5})/g,'$1 [IDENTIFICAÇÃO OMITIDA]');
  return t;
 }
-async function loadTestData(){
- const status=document.getElementById('status');
- if(status)status.textContent='Carregando dados da planilha de teste...';
- try{
-  const url='https://docs.google.com/spreadsheets/d/e/2PACX-1vQYOAR1W1ydsgwLTeJ8Zu6ro183sdsYJfsQHDMEdF9BJ6E05XMW9XJU6z9ElO7DfcyMDTSJsB-hGvj1/pub?gid=2039429476&single=true&output=csv';
-  const response=await fetch(url,{cache:'no-store'});
-  if(!response.ok)throw new Error('HTTP '+response.status);
-  const csvText=await response.text();
-  if(!csvText.trim())throw new Error('A planilha retornou conteúdo vazio.');
-  const rows=parseCSV(csvText);
-  const headers=rows.shift().map(x=>x.replace(/^\\uFEFF/,'').trim());
-  const required=['TIPO DE RELATÓRIO:','TIPO DE OCORRÊNCIA:','PONTO DE REFERÊNCIA','SETORES','GRAVIDADE','Data do Serviço','RELATO DA OCORRÊNCIA'];
-  const missing=required.filter(h=>!headers.includes(h));
-  if(missing.length)throw new Error('Colunas ausentes no CSV: '+missing.join(', '));
-  const col=name=>headers.indexOf(name);
-  occurrences=rows.filter(r=>String(r[col('TIPO DE RELATÓRIO:')]||'').trim().toLocaleLowerCase('pt-BR')==='ocorrência').map(r=>({
-   tipo:String(r[col('TIPO DE OCORRÊNCIA:')]||'').trim(),
-   local:String(r[col('PONTO DE REFERÊNCIA')]||'').trim(),
-   setor:String(r[col('SETORES')]||'').trim(),
-   gravidade:({'Baixa':'Leve','Média':'Moderada','Media':'Moderada','Alta':'Grave'}[String(r[col('GRAVIDADE')]||'').trim()]||String(r[col('GRAVIDADE')]||'').trim()),
-   data:String(r[col('Data do Serviço')]||'').trim(),
-   relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||''),
-   classificacao:''
-  }));
-  Object.keys(filters).forEach(k=>filters[k]=null);
-  render();
-  const status=document.getElementById('status');
-  if(status)status.textContent='MODO DE TESTE · dados históricos de 2025 · '+occurrences.length+' ocorrências';
- }catch(error){
-  console.error('Falha ao carregar CSV de teste:',error);
-  const status=document.getElementById('status');
-  if(status)status.textContent='Não foi possível carregar a planilha CSV publicada.';
-  render();
- }
-}
-document.getElementById('refresh').addEventListener('click',loadTestData);
+function loadTestData(){render();}\ndocument.getElementById('refresh').addEventListener('click',loadTestData);
 loadTestData();
 })();
 </script>
-</body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="dashboard-supabase.js"></script>\n</body></html>
