@@ -43,7 +43,7 @@ function buildDashboardData_(requestedDate) {
   };}).slice(-500).reverse();
   var present=Object.keys(checked).length;
   return {success:true,updatedAt:new Date().toISOString(),date:day,
-    summary:{efetivoPrevisto:roster.length,efetivoApresentado:present,faltas:Math.max(0,roster.length-present),
+    summary:{efetivoPrevisto:roster.length,efetivoApresentado:present,faltas:dayAlt.filter(function(r){return normalizeText_(r[3])==='falta';}).length,naoApresentados:Math.max(0,roster.length-present),
       viaturasTerrestres:vc.terrestre,drones:vc.drone+vc.aerea,recursosAquaticos:vc.aquatica,
       alteracoes:dayAlt.length,checkins:present,ocorrenciasHoje:occ.filter(function(o){return o.data===day;}).length},
     occurrences:occ};
