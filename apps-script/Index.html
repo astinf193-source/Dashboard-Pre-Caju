@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #FAF6E9; /* Faint, soft yellow background */
+    margin: 0;
+    padding: 0; /* Removed body padding so banner spans full width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* Warning Notice Banner - Fixed for Full Width */
+  .nav-warning-banner {
+    background-color: #FFF3E0;
+    border-bottom: 2px solid #FFE0B2;
+    padding: 6px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centers banner content horizontally */
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box; /* Includes padding within width calculation */
+  }
+
+  .warning-icon {
+    font-size: 0px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .warning-text {
+    font-size: 12px;
+    color: #BF360C;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  .warning-text strong {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* Main Container */
+  #app {
+    width: 100%;
+    max-width: 700px; /* Limits card width on larger screens */
+    padding: 20px;    /* Re-applied padding here for card spacing */
+    box-sizing: border-box;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    border: 1px solid #e2dacb;
+  }
+
+  /* Header: Soft desaturated gold with red accent border */
+  .card-header {
+    background-color: #E2C98D;
+    padding: 14px 24px;
+    border-bottom: 4px solid #D32F2F;
+  }
+  
+  .card-header h2 { 
+    margin: 0 0 6px 0; 
+    color: #2c2518;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .card-meta {
+    font-size: 13px;
+    color: #5c5240;
+    margin: 0;
+  }
+
+  .card-meta span {
+    font-weight: 600;
+    color: #1f1a10;
+  }
+
+  /* Card Body */
+  .card-body {
+    padding: 24px;
+    background-color: #ffffff;
+  }
+  
+  label { 
+    display: block; 
+    margin-top: 14px; 
+    color: #4a453b; 
+    font-size: 13px; 
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  label:first-child { margin-top: 0; }
+  
+  input, textarea, button {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cfc7b8;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: #D32F2F;
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
+  }
+
+  /* Primary Button: Fire Engine Red */
+  button {
+    background-color: #D32F2F;
+    color: white;
+    border: none;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  button:hover {
+    background-color: #B71C1C;
+  }
+
+  button:active { 
+    background-color: #9A0007; 
+  }
+  
+  /* Cancel / Secondary Button */
+  button.btn-cancel {
+    background-color: #f1ede4;
+    color: #4a453b;
+    border: 1px solid #dcd5c7;
+  }
+
+  button.btn-cancel:hover {
+    background-color: #e5dfd2;
+  }
+
+  button.btn-cancel:active {
+    background-color: #d8d0c1;
+  }
+  
+  .hidden { display: none; }
+  
+  .error { 
+    color: #D32F2F; 
+    font-weight: 600;
+    font-size: 14px; 
+    margin-top: 10px; 
+  }
+
+  /* Entries Feed */
+  .entries-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .entry-card {
+    background-color: #ffffff;
+    border: 1px solid #e8e2d5;
+    border-left: 5px solid #D32F2F;
+    border-radius: 6px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .entry-card-presente {
+    background-color: #ffffff;
+    border: 1px solid #e8e2d5;
+    border-left: 5px solid #0d7818;
+    border-radius: 6px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #6e6657;
+  }
+
+  .entry-time {
+    font-weight: 600;
+  }
+
+  .entry-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  /* Badges */
+  .badge {
+    background-color: #FFEBEE;
+    color: #C62828;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .badge-type {
+    background-color: #FFF3E0;
+    color: #E65100;
+    border: 1px solid #FFE0B2;
+  }
+
+  .entry-relato {
+    font-size: 14px;
+    color: #2c2518;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    background: #FAF6E9;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    border-left: 3px solid #D9C9A3;
+  }
+
+  .empty-state, .loading-state {
+    text-align: center;
+    color: #8c8270;
+    padding: 24px;
+    font-style: italic;
+  }
+
+  /* Hidden Utility */
+.hidden {
+  display: none !important;
+}
+
+/* Full-Screen Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(18, 18, 18, 0.75); /* Dark translucent backdrop */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #E2C98D; /* Soft Gold ring */
+  border-top: 5px solid #D32F2F; /* Fire Red accent */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+#loadingText {
+  color: #ffffff;
+  margin-top: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<div class="nav-warning-banner">
+  <div class="warning-text">
+    <strong>⚠️ Atenção:</strong> Utilize apenas os botões do sistema para navegar. 
+  </div>
+</div>
+
+<div id="app" style="width: 100%">
+  <div class="card">
+      <div class="card-header">
+          <h2>Eventos 2026: Pré-Caju - CBMSE</h2>
+      </div>
+      <!-- LOGIN VIEW -->
+      <div class="card-body">
+          <label for="matricula">Matrícula:</label>
+          <input type="text" id="matricula" maxlength="8" placeholder="00.000-0" oninput="mascaraMatricula(this)">
+
+          <label for="loginKey">CPF</label>
+          <input type="password" id="loginKey" placeholder="CPF sem pontos ou traços.">
+
+          <button style="margin-top: 12px;" onclick="handleLogin()">Entrar</button>
+          <div id="loginError" class="error"></div>
+      </div>
+
+      <!-- SUPORTE WHATSAPP -->
+      <div class="card-footer" style="text-align: center; padding-top: 6px; padding-bottom: 6px; border-top: 1px solid #e0e0e0;">
+          <a href="https://w.app/7w8eat" target="_blank" rel="noopener noreferrer" style="color: #2d8544; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16">
+                  <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232" />
+              </svg> Canal de Suporte via Whatsapp
+          </a>
+      </div>
+  </div>
+</div>
+
+<!-- Full-Screen Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <p id="loadingText">Carregando...</p>
+</div>
+
+<script>
+  let appState = {
+    user: "",
+    matricula:"",
+    zona: "",
+    local: "",
+    funcao: "",
+    supervisor: false,
+    checkin: false,
+  };
+
+   function handleLogin() {
+    const matricula = document.getElementById('matricula').value;
+    const key = document.getElementById('loginKey').value;
+    const errorDiv = document.getElementById('loginError');
+    showLoading("Efetuando login...");
+
+    google.script.run.withSuccessHandler(function(response) {
+      if (response.success) {
+        appState.user = response.user;
+        appState.matricula = response.matricula;
+        appState.zona = response.zona;
+        appState.local = response.local;
+        appState.funcao = response.funcao;
+        appState.supervisor = response.supervisor;
+        appState.checkin = response.checkin;
+        
+        loadPage('Menu');
+        hideLoading();
+      } else {
+        alert(response.message);
+        hideLoading();
+      }
+    }).checkLogin(matricula, key);
+  }
+ 
+  function loadPage(pageName) {
+    google.script.run
+      .withSuccessHandler(function(htmlContent) {
+        document.getElementById('app').innerHTML = htmlContent;
+          initProfile(appState);
+          
+          switch (pageName) {
+            case 'Menu':
+              initMenu(appState);
+              break;
+            case 'Ocorrencia':
+              // initOcorrencia();
+              break;
+            case 'OcorrenciaLocal':
+              initOcorrenciaLocal();
+              break;
+            case 'AlteracaoMilitar':
+              initAlteracaoMilitar();
+              break;
+            case 'MeusRegistros':
+              loadUserEntries();
+              break;
+            case 'Avisos':
+              loadAvisos();
+              break;
+            case 'MilitaresZona':
+              loadMilitaresZona();
+              break;
+            case 'ConsultaOcorrencias':
+              loadConsulta();
+              break;
+          }
+      })
+      .includePage(pageName);
+  }
+
+  function initProfile(state) {
+    document.getElementById('userDisplayName').innerText = state.user;
+    document.getElementById('userFunction').innerText = state.funcao;
+    document.getElementById('userZone').innerText = state.zona;
+    document.getElementById('userLocation').innerText = state.local;
+  }
+
+  function initMenu(state) {
+    document.getElementById('gestaoSection').hidden = !state.supervisor;
+    document.getElementById('checkInSection').hidden = state.checkin;
+    document.getElementById('novoAvisoBtn').hidden = !state.supervisor;
+    document.getElementById('consultaOcorrenciaBtn').hidden = !state.supervisor;
+  }
+
+  function initOcorrencia(){
+    document.getElementById('zonaSelect').addEventListener('change', function() {
+      const selectedZone = this.value;
+      const localSelect = document.getElementById('localSelect');
+      
+      // Loading state
+      localSelect.innerHTML = '<option selected disabled value="">Carregando locais...</option>';
+      
+      // Fetch locations from Google Sheet
+      google.script.run
+        .withSuccessHandler(function(locations) {
+          localSelect.innerHTML = '<option selected disabled value="">Selecione o local</option>';
+          
+          locations.forEach(function(local) {
+            const option = document.createElement('option');
+            option.value = local;
+            option.textContent = local;
+            localSelect.appendChild(option);
+          });
+        })
+        .getLocationsByZone(selectedZone);
+    });
+  }
+
+  function initOcorrenciaLocal(){
+    const zonaSelect = document.getElementById('zonaSelect')
+    const localSelect = document.getElementById('localSelect');
+
+    zonaSelect.innerHTML = `<option selected value="${appState.zona}">${appState.zona}</option>`;
+    localSelect.innerHTML =  `<option selected value="${appState.local}">${appState.local}</option>`;
+  }
+
+  function initAlteracaoMilitar(){   
+    const userSelect = document.getElementById('userSelect');
+    
+    // Loading state
+    userSelect.innerHTML = '<option selected disabled value="">Carregando militares...</option>';
+    
+    // Fetch locations from Google Sheet
+    google.script.run
+      .withSuccessHandler(function(locations) {
+        userSelect.innerHTML = '<option selected disabled value="">Selecione o Militar</option>';
+        
+        locations.forEach(function(local) {
+          const option = document.createElement('option');
+          option.value = local;
+          option.textContent = local;
+          userSelect.appendChild(option);
+        });
+      })
+        .getUsersByZone(appState.zona);
+  }
+
+function loadUserEntries() {
+  const container = document.getElementById('entriesList');
+  
+  // Show loading state
+  container.innerHTML = '<div class="loading-state">Carregando ocorrências...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(entries) {
+      // Clear loading state
+      container.innerHTML = '';
+
+      if (!entries || entries.length === 0) {
+        container.innerHTML = '<div class="empty-state">Nenhuma ocorrência encontrada.</div>';
+        return;
+      }
+
+      // Build each entry card
+      entries.forEach(function(entry) {
+        const card = document.createElement('div');
+        card.className = 'entry-card';
+
+        // 1. Format timestamp into human-readable format (pt-BR)
+        let formattedTime = 'Data N/A';
+        if (entry.time) {
+          const dateObj = new Date(entry.time);
+          formattedTime = dateObj.toLocaleString('pt-BR', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+          });
+        }
+
+        switch (entry.classe){
+        case 'Ocorrencia':
+          card.innerHTML = `
+            <div class="entry-header">
+              <span class="entry-time"><span style="font-size: 14px">Ocorrência</span> 🕒 ${formattedTime}</span>
+            </div>
+            <div class="entry-tags">
+              <span class="badge">Setor: ${escapeHtml(entry.zona)}</span>
+              <span class="badge">Ponto de Ref: ${escapeHtml(entry.local)}</span>
+              <span class="badge">Gravidade: ${escapeHtml(entry.gravidade)}</span>
+              <span class="badge">Qtd de Pessoas: ${escapeHtml(entry.qtd)}</span>
+              <span class="badge badge-type">${escapeHtml(entry.tipo)}</span>
+            </div>
+            <div class="entry-relato">${escapeHtml(entry.relato)}</div>
+          `;
+          break;
+        
+        case 'AlteracaoMilitar':
+          card.innerHTML = `
+            <div class="entry-header">
+              <span class="entry-time"><span style="font-size: 14px">Alteração de Militar</span>🕒 ${formattedTime}</span>
+            </div>
+            <div class="entry-tags">
+              <span class="badge">Militar: ${escapeHtml(entry.militar)}</span>
+              <span class="badge badge-type">${escapeHtml(entry.tipo)}</span>
+            </div>
+            <div class="entry-relato">${escapeHtml(entry.relato)}</div>
+          `;
+          break;
+
+          case 'Checkin':
+          card.innerHTML = `
+            <div class="entry-header">
+              <span class="entry-time"><span style="font-size: 14px">Assunção de Serviço</span>🕒 ${formattedTime}</span>
+            </div>
+          `;
+          break;
+
+          case 'Viatura':
+          card.innerHTML = `
+            <div class="entry-header">
+              <span class="entry-time"><span style="font-size: 14px">Uso de Viatura/Drone</span>🕒 ${formattedTime}</span>
+            </div>
+            <div class="entry-tags">
+              <span class="badge">Viatura/Drone: ${escapeHtml(entry.viatura)}</span>
+              <span class="badge badge-type">${escapeHtml(entry.tipo)}</span>
+            </div>
+            <div class="entry-relato">${escapeHtml(entry.relato)}</div>
+          `;
+          break;
+
+        }
+
+        container.appendChild(card);
+      });
+    })
+    .withFailureHandler(function(err) {
+      container.innerHTML = `<div class="empty-state" style="color: #d93025;">Erro ao carregar registros: ${err.message}</div>`;
+    })
+    .getSubmitsbyUser(appState.matricula); // Pass user's matricula from appState
+}
+
+function loadConsulta() {
+  const container = document.getElementById('entriesList');
+  
+  // Show loading state
+  container.innerHTML = '<div class="loading-state">Carregando ocorrências...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(entries) {
+      // Clear loading state
+      container.innerHTML = '';
+
+      if (!entries || entries.length === 0) {
+        container.innerHTML = '<div class="empty-state">Nenhuma ocorrência encontrada.</div>';
+        return;
+      }
+
+      // Build each entry card
+      entries.forEach(function(entry) {
+        const card = document.createElement('div');
+        card.className = 'entry-card';
+
+        // 1. Format timestamp into human-readable format (pt-BR)
+        let formattedTime = 'Data N/A';
+        if (entry.time) {
+          const dateObj = new Date(entry.time);
+          formattedTime = dateObj.toLocaleString('pt-BR', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+          });
+        }
+      
+        card.innerHTML = `
+          <div class="entry-header">
+            <span class="entry-time"><span style="font-size: 14px">Ocorrência</span> 🕒 ${formattedTime}</span>
+          </div>
+          <div class="entry-tags">
+            <span class="badge">Setor: ${escapeHtml(entry.zona)}</span>
+            <span class="badge">Ponto de Ref: ${escapeHtml(entry.local)}</span>
+            <span class="badge">Registrado por: ${escapeHtml(entry.militar)}</span>
+            <span class="badge">Gravidade: ${escapeHtml(entry.gravidade)}</span>
+            <span class="badge">Qtd de Pessoas: ${escapeHtml(entry.qtd)}</span>
+            <span class="badge badge-type">${escapeHtml(entry.tipo)}</span>
+          </div>
+          <div class="entry-relato">${escapeHtml(entry.relato)}</div>
+        `;
+      
+        container.appendChild(card);
+      });
+    })
+    .withFailureHandler(function(err) {
+      container.innerHTML = `<div class="empty-state" style="color: #d93025;">Erro ao carregar registros: ${err.message}</div>`;
+    })
+    .getSubmitsbyZone(appState.zona); // Pass user's matricula from appState
+}
+
+function loadAvisos() {
+  const container = document.getElementById('entriesList');
+  
+  // Show loading state
+  container.innerHTML = '<div class="loading-state">Carregando Avisos...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(entries) {
+      // Clear loading state
+      container.innerHTML = '';
+
+      if (!entries || entries.length === 0) {
+        container.innerHTML = '<div class="empty-state">Nenhuma aviso postado.</div>';
+        return;
+      }
+
+      // Build each entry card
+      entries.forEach(function(entry) {
+        const card = document.createElement('div');
+        card.className = 'entry-card';
+
+        // 1. Format timestamp into human-readable format (pt-BR)
+        let formattedTime = 'Data N/A';
+        if (entry.time) {
+          const dateObj = new Date(entry.time);
+          formattedTime = dateObj.toLocaleString('pt-BR', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+          });
+        }
+
+        card.innerHTML = `
+          <div class="entry-header">
+              <span class="entry-time"><span style="font-size: 14px">🕒 Postado em:</span>  ${formattedTime}</span>
+          </div>
+          <div class="entry-tags">
+              <span class="badge">Postado por: ${escapeHtml(entry.militar)}</span>
+              <span class="badge">Setor: ${escapeHtml(entry.zona)}</span>
+          </div>
+          <div class="entry-relato">${escapeHtml(entry.aviso)}</div>
+        `;
+          
+
+        container.appendChild(card);
+      });
+    })
+    .withFailureHandler(function(err) {
+      container.innerHTML = `<div class="empty-state" style="color: #d93025;">Erro ao carregar registros: ${err.message}</div>`;
+    })
+    .getAvisos(appState.zona);
+}
+
+function loadMilitaresZona() {
+  const container = document.getElementById('entriesList');
+  
+  // Show loading state
+  container.innerHTML = '<div class="loading-state">Carregando Militares...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(entries) {
+      // Clear loading state
+      container.innerHTML = '';
+
+      if (!entries || entries.length === 0) {
+        container.innerHTML = '<div class="empty-state">Nenhuma aviso postado.</div>';
+        return;
+      }
+
+      // Build each entry card
+      entries.forEach(function(entry) {
+        const card = document.createElement('div');
+        if(entry.checkin)
+          card.className = 'entry-card-presente';
+        else
+          card.className = 'entry-card';
+        
+        card.innerHTML = `
+          <div class="entry-header">
+              <span class="entry-time"style="font-size: 14px">${escapeHtml(entry.militar)}</span> 
+          </div>
+        `;
+          
+
+        container.appendChild(card);
+      });
+    })
+    .withFailureHandler(function(err) {
+      container.innerHTML = `<div class="empty-state" style="color: #d93025;">Erro ao carregar registros: ${err.message}</div>`;
+    })
+    .getUserWithCheckinByZone(appState.zona);
+}
+
+// Helper to prevent XSS attacks when displaying user-generated text
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function submitOcorrencia() {
+  const ans1 = document.getElementById('zonaSelect').value;
+  const ans2 = document.getElementById('pontoText').value.trim();
+  const ans3 = document.getElementById('tipoSelect').value;
+  const ans4 = document.getElementById('gravidadeSelect').value;
+  const ans5 = document.getElementById('relatoText').value.trim();
+  const ans6 = document.getElementById('qtdInput').value;
+  const statusDiv = document.getElementById('formStatus');
+  const submitBtn = document.querySelector('button[onclick="submitOcorrencia()"]');
+  console.log(ans1,ans2,ans3,ans4,ans5,ans6);
+
+  // 1. CLIENT-SIDE VALIDATION
+  if (!ans1) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, selecione a Zona.";
+    return;
+  }
+  if (!ans2) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, informe um ponto de referencia.";
+    return;
+  }
+  if (!ans3) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, selecione o tipo de Ocorrência.";
+    return;
+  }
+  if (!ans4) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, selecione a gravidade da Ocorrência.";
+    return;
+  }
+  if (!ans5) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, escreva o Relato da ocorrência.";
+    return;
+  }
+  if (!ans6) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, informe a quantidade de pessoas atendidas";
+    return;
+  }
+
+  // 2. PREPARE UI FOR SUBMISSION (Disable button to prevent double submits)
+  showLoading("Salvando registro...");
+  if (submitBtn) submitBtn.disabled = true;
+
+  // 3. EXECUTE SERVER CALL WITH SUCCESS AND FAILURE HANDLERS
+  google.script.run
+    .withSuccessHandler(function(response) {
+      hideLoading();
+      if (submitBtn) submitBtn.disabled = false;
+
+      // Handle custom error returned by server logic
+      if (response && response.error) {
+        statusDiv.style.color = '#d93025';
+        statusDiv.innerText = "Erro ao salvar: " + response.error;
+        return;
+      }
+
+      // Success state
+      statusDiv.style.color = '#188038';
+      statusDiv.innerText = "Ocorrência salva com sucesso!";
+
+      loadPage("Menu");
+    })
+    .withFailureHandler(function(error) {
+      // Re-enable button & display runtime/network error
+      if (submitBtn) submitBtn.disabled = false;
+      statusDiv.style.color = '#d93025';
+      statusDiv.innerText = "Erro de conexão/servidor: " + error.message;
+      hideLoading();
+    })
+    .saveResponse(appState.user, appState.matricula, ans1, ans2, ans3, ans4, ans5, ans6);
+}
+
+function submitAltercaoMilitar() {
+  const ans1 = document.getElementById('tipoSelect').value;
+  const ans2 = document.getElementById('userSelect').value;
+  const ans3 = document.getElementById('relatoText').value.trim();
+  const statusDiv = document.getElementById('formStatus');
+  const submitBtn = document.querySelector('button[onclick="submitAltercaoMilitar()"]');
+
+  // 1. CLIENT-SIDE VALIDATION
+  if (!ans1) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, selecione o Tipo de Ocorrência.";
+    return;
+  }
+  if (!ans2) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, selecione o Militar.";
+    return;
+  }
+
+  // 2. PREPARE UI FOR SUBMISSION (Disable button to prevent double submits)
+  showLoading("Salvando registro...");
+  if (submitBtn) submitBtn.disabled = true;
+
+  // 3. EXECUTE SERVER CALL WITH SUCCESS AND FAILURE HANDLERS
+  google.script.run
+    .withSuccessHandler(function(response) {
+      hideLoading();
+      if (submitBtn) submitBtn.disabled = false;
+
+      // Handle custom error returned by server logic
+      if (response && response.error) {
+        statusDiv.style.color = '#d93025';
+        statusDiv.innerText = "Erro ao salvar: " + response.error;
+        return;
+      }
+
+      // Success state
+      statusDiv.style.color = '#188038';
+      statusDiv.innerText = "Alteração de militar salva com sucesso!";
+
+      loadPage("Menu");
+    })
+    .withFailureHandler(function(error) {
+      // Re-enable button & display runtime/network error
+      if (submitBtn) submitBtn.disabled = false;
+      statusDiv.style.color = '#d93025';
+      statusDiv.innerText = "Erro de conexão/servidor: " + error.message;
+      hideLoading();
+    })
+    .saveAlteracao(appState.user,appState.matricula, ans1, ans2, ans3);
+}
+
+function submitViatura() {
+  const ans1 = document.getElementById('tipoSelect').value;
+  const ans2 = document.getElementById('viaturaText').value.trim();
+  const ans3 = document.getElementById('relatoText').value.trim();
+
+  const statusDiv = document.getElementById('formStatus');
+  const submitBtn = document.querySelector('button[onclick="submitViatura()"]');
+
+  // 1. CLIENT-SIDE VALIDATION
+  if (!ans1) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, selecione o tipo de Viatura.";
+    return;
+  }
+
+  if (!ans2) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, informe a viatura.";
+    return;
+  }
+
+  // 2. PREPARE UI FOR SUBMISSION (Disable button to prevent double submits)
+  showLoading("Salvando registro...");
+  if (submitBtn) submitBtn.disabled = true;
+
+  // 3. EXECUTE SERVER CALL WITH SUCCESS AND FAILURE HANDLERS
+  google.script.run
+    .withSuccessHandler(function(response) {
+      hideLoading();
+      if (submitBtn) submitBtn.disabled = false;
+
+      // Handle custom error returned by server logic
+      if (response && response.error) {
+        statusDiv.style.color = '#d93025';
+        statusDiv.innerText = "Erro ao salvar: " + response.error;
+        return;
+      }
+
+      // Success state
+      statusDiv.style.color = '#188038';
+      statusDiv.innerText = "Registro salvo com sucesso!";
+
+      loadPage("Menu");
+    })
+    .withFailureHandler(function(error) {
+      // Re-enable button & display runtime/network error
+      if (submitBtn) submitBtn.disabled = false;
+      statusDiv.style.color = '#d93025';
+      statusDiv.innerText = "Erro de conexão/servidor: " + error.message;
+      hideLoading();
+    })
+    .saveViatura(appState.user,appState.matricula, ans1, ans2, ans3);
+}
+
+function submitAviso() {
+  const ans1 = document.getElementById('avisoText').value;
+
+  const statusDiv = document.getElementById('formStatus');
+  const submitBtn = document.querySelector('button[onclick="submitAviso()"]');
+
+  // 1. CLIENT-SIDE VALIDATION
+  if (!ans1) {
+    statusDiv.style.color = '#d93025';
+    statusDiv.innerText = "Por favor, escreva um aviso";
+    return;
+  }
+
+  // 2. PREPARE UI FOR SUBMISSION (Disable button to prevent double submits)
+  showLoading("Salvando registro...");
+  if (submitBtn) submitBtn.disabled = true;
+
+  // 3. EXECUTE SERVER CALL WITH SUCCESS AND FAILURE HANDLERS
+  google.script.run
+    .withSuccessHandler(function(response) {
+      hideLoading();
+      if (submitBtn) submitBtn.disabled = false;
+
+      // Handle custom error returned by server logic
+      if (response && response.error) {
+        statusDiv.style.color = '#d93025';
+        statusDiv.innerText = "Erro ao salvar: " + response.error;
+        return;
+      }
+
+      // Success state
+      statusDiv.style.color = '#188038';
+      statusDiv.innerText = "Registro salvo com sucesso!";
+
+      loadPage("Menu");
+    })
+    .withFailureHandler(function(error) {
+      // Re-enable button & display runtime/network error
+      if (submitBtn) submitBtn.disabled = false;
+      statusDiv.style.color = '#d93025';
+      statusDiv.innerText = "Erro de conexão/servidor: " + error.message;
+      hideLoading();
+    })
+    .saveAviso(appState.user,appState.matricula, appState.zona, ans1);
+}
+
+function checkIn() {
+  // Exibe a caixa de confirmação
+  const confirmado = confirm("Confirma o registro da assunção de serviço?");
+  
+  // Se o usuário clicar em "Cancelar", cancela a operação
+  if (!confirmado) {
+    return;
+  }
+
+  const checkinBtn = document.querySelector('button[onclick="checkIn()"]');
+  if (checkinBtn) checkinBtn.disabled = true;
+
+  showLoading("Registrando assunção de serviço...");
+
+  google.script.run
+    .withSuccessHandler(function(response) {
+      hideLoading();
+      appState.checkin = true;
+      
+      // Reloads/renders the menu directly
+      loadPage("Menu");
+    })
+    .withFailureHandler(function(error) {
+      hideLoading();
+      if (checkinBtn) checkinBtn.disabled = false;
+      alert("Não foi possível registrar a assunção de serviço.");
+    })
+    .saveCheckIn(appState.user, appState.matricula);
+}
+// --- Helper Functions to Control Overlay ---
+
+function showLoading(message = "Carregando...") {
+  document.getElementById("loadingText").innerText = message;
+  document.getElementById("loadingOverlay").classList.remove("hidden");
+}
+
+function hideLoading() {
+  document.getElementById("loadingOverlay").classList.add("hidden");
+}
+
+function mascaraMatricula(input) {
+    let v = input.value.replace(/\D/g, ""); // Remove tudo o que não é dígito
+    
+    if (v.length > 6) v = v.slice(0, 6); // Limita a 6 dígitos
+    
+    // Aplica a formatação
+    v = v.replace(/(\d{2})(\d)/, "$1.$2");
+    v = v.replace(/(\d{3})(\d{1})$/, "$1-$2");
