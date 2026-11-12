@@ -1,0 +1,32 @@
+<div class="card">
+  <div class="card-header">
+    <h2>Bem Vindo, <span id="userDisplayName"></span></h2>
+    <p class="card-meta">
+      Funcao: <span id="userFunction"></span><br>
+      Setor: <span id="userZone"></span><br>
+      Local: <span id="userLocation"></span>
+    </p>
+  </div>
+  <div class="card-body">
+    <h3 style="text-align: center;">Registro de Emprego de Viatura/Drones</h3>
+    
+    <label for="tipoSelect">Tipo:</label>
+    <select id="tipoSelect">
+        <option selected disabled value=''>Selecione o Tipo</option>
+        <option>Terrestre</option>
+        <option>Aquática</option>
+        <option>Aérea</option>
+    </select>
+
+    <label for=relatoText >Prefixo e Numeração(ex.: AS-13)</label>
+    <input id="viaturaText" placeholder="AS-13"></input>
+    
+    <label for=relatoText >Observação</label>
+    <textarea id="relatoText" rows="3" placeholder="Se desejar, escreva aqui uma observação."></textarea>
+
+    <div id="formStatus" style="margin-top:10px;"></div>
+    
+    <button style="margin-bottom: 12px;"onclick="submitViatura()">Enviar</button>
+    <button class="btn-cancel" onclick="loadPage('Menu')">Cancelar</button>
+  </div>
+</div>
