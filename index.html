@@ -355,7 +355,8 @@
  }
 }
 
-\n.login{max-width:390px;margin:12vh auto;padding:26px;background:#082746;border:1px solid var(--line);border-radius:14px}.login h2{margin-top:0}.login input{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #326487;border-radius:7px;background:#04182d;color:white}.hidden{display:none!important}\n</style></head>
+\n.login{max-width:390px;margin:12vh auto;padding:26px;background:#082746;border:1px solid var(--line);border-radius:14px}.login h2{margin-top:0}.login input{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #326487;border-radius:7px;background:#04182d;color:white}.hidden{display:none!important}
+</style></head>
 <body>
 <section id="loginScreen" class="login"><h2>Acesso operacional</h2><p>Entre com sua conta individual do Pré-Caju.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="E-mail institucional" required autocomplete="username"><input id="loginPassword" type="password" placeholder="Senha" required autocomplete="current-password"><button id="loginButton" type="submit">Entrar</button></form><p id="loginMessage" class="status"></p></section>\n<main id="app" class="wrap hidden">
 <header class="head"><img class="logo" src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/logo-precaju.png" alt="Pré-Caju"><div class="title"><div class="eyebrow">CORPO DE BOMBEIROS MILITAR · SERGIPE</div><h1>OPERAÇÃO <span>PRÉ-CAJU 2026</span></h1><p>SEGURANÇA, VIDA E TRANQUILIDADE · ORLA DE ATALAIA — ARACAJU/SE</p></div><img class="logo" src="https://raw.githubusercontent.com/astinf193-source/Painel-Pre-Caju/main/images/logo-cbmse.png" alt="Brasão CBMSE"></header>
@@ -503,8 +504,11 @@ function safeReport(value){
  t=t.replace(/(Paciente|Vítima|Vitima)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+){1,5})/g,'$1 [IDENTIFICAÇÃO OMITIDA]');
  return t;
 }
-function loadTestData(){render();}\ndocument.getElementById('refresh').addEventListener('click',loadTestData);
+function loadTestData(){render();}
+window.CBMSE_RENDER_OCCURRENCES=function(data){occurrences=Array.isArray(data)?data:[];Object.keys(filters).forEach(k=>filters[k]=null);render();};
+document.getElementById('refresh').addEventListener('click',loadTestData);
 loadTestData();
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="dashboard-supabase.js"></script>\n</body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="dashboard-supabase.js"></script>
+</body></html>
