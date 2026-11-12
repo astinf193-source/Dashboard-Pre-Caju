@@ -408,10 +408,11 @@
   }
 
   function initProfile(state) {
-    document.getElementById('userDisplayName').innerText = state.user;
-    document.getElementById('userFunction').innerText = state.funcao;
-    document.getElementById('userZone').innerText = state.zona;
-    document.getElementById('userLocation').innerText = state.local;
+    const values = {userDisplayName:state.user,userFunction:state.funcao,userZone:state.zona,userLocation:state.local};
+    Object.keys(values).forEach(function(id) {
+      const element = document.getElementById(id);
+      if (element) element.innerText = values[id] || '';
+    });
   }
 
   function initMenu(state) {
