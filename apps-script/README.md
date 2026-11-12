@@ -60,7 +60,7 @@ A URL é armazenada no navegador que fez a configuração. Para outros computado
 - O endpoint da dashboard retorna apenas totais operacionais e campos de ocorrência necessários à visualização (data, tipo, setor, ponto, gravidade e quantidade). Não envia matrícula, CPF, nome do militar ou texto livre do relato.
 - As operações de gravação e consulta individual exigem um token de sessão temporário validado no servidor.
 - A autenticação original usa o valor da coluna F da aba `Users` como credencial. O script legado trata CPF como texto simples. **Antes de disponibilizar amplamente, substitua esse mecanismo por credencial individual protegida (hash/salt) e valide a política de acesso com a área de segurança da informação.**
-- A contagem de faltas é calculada como efetivo previsto menos check-ins do dia. Ela é um indicador de conferência e não substitui a validação formal da escala.
+- A contagem de faltas registradas considera as alterações do dia cujo tipo seja 'Falta'. O indicador 'Pendentes de check-in' é calculado como efetivo previsto menos check-ins do dia e não equivale automaticamente a falta.
 - Registros de viaturas são contados por data de lançamento; o formulário original não contém situação operacional nem coordenadas geográficas. Esses campos podem ser acrescentados em etapa posterior.
 - O endpoint de leitura é destinado à dashboard operacional. Não inclua dados pessoais, relatos identificáveis ou informações sensíveis nas colunas que serão publicadas.
 
