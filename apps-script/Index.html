@@ -949,7 +949,7 @@ function submitAviso() {
       statusDiv.innerText = "Erro de conexão/servidor: " + error.message;
       hideLoading();
     })
-    .saveAviso(appState.user,appState.matricula, appState.zona, ans1);
+    .saveAviso(appState.token, ans1);
 }
 
 function checkIn() {
