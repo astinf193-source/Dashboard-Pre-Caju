@@ -1,0 +1,54 @@
+<div class="card">
+  <div class="card-header">
+    <h2>Bem Vindo, <span id="userDisplayName"></span></h2>
+    <p class="card-meta">
+      Funcao: <span id="userFunction"></span><br>
+      Setor: <span id="userZone"></span><br>
+      Local: <span id="userLocation"></span>
+    </p>
+  </div>
+  <div class="card-body">
+    <h3 style="text-align: center;">Registro de Ocorrência</h3>
+    
+    <label for="zonaSelect">Zona:</label>
+    <select id="zonaSelect" >
+    </select>
+    
+    <label for="localSelect">Local (Cidade ou Escola):</label>
+    <select id="localSelect">
+    </select>
+    
+    <label for="tipoSelect">Tipo de Ocorrência:</label>
+    <select id="tipoSelect">
+        <option selected disabled value=''>Selecione o Tipo</option>
+        <option>Boca de urna</option>
+        <option>Tumulto</option>
+        <option>APH</option>
+        <option>Agressão física</option>
+        <option>Desobediência</option>
+        <option>Extravio de Urna Eletrônica</option>
+        <option>Lesão corporal por arma branca</option>
+        <option>Lesão corporal por arma de fogo</option>
+        <option>Princípio de incêndio</option>
+        <option>Invasão ao local de votação</option>
+        <option>Outro</option>
+    </select>
+
+    <label for="gravidadeSelect">Gravidade da Ocorrência:</label>
+    <select id="gravidadeSelect">
+        <option selected disabled value=''>Selecione</option>
+        <option>Baixa</option>
+        <option>Moderada</option>
+        <option>Grave</option>
+        <option>Fatal</option>
+    </select>
+    
+    <label for=relatoText >Relato</label>
+    <textarea id="relatoText" rows="3" placeholder="Escreva seu relato aqui. Registrar nomes, CPF, etc. "></textarea>
+
+    <div id="formStatus" style="margin-top:10px;"></div>
+    
+    <button style="margin-bottom: 12px;" onclick="submitOcorrencia()">Enviar</button>
+    <button class="btn-cancel" onclick="loadPage('Menu')">Cancelar</button>
+  </div>
+</div>
