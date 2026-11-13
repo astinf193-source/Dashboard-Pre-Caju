@@ -478,7 +478,8 @@ function render(operational={}){
  document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').reduce((s,o)=>s+(Number(o.quantidade)||1),0):'—';
 document.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').reduce((s,o)=>s+(Number(o.quantidade)||1),0):'—';
  const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
- const resourceCounts={...operational.vehicleCounts,Militares:operational.checkinCount,Faltas:operational.absenceCount};\n document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>'+(resourceCounts[name]??'—')+'</strong><span>'+name+'</span></div>').join('');
+ const resourceCounts={...operational.vehicleCounts,Militares:operational.checkinCount,Faltas:operational.absenceCount};
+ document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>'+(resourceCounts[name]??'—')+'</strong><span>'+name+'</span></div>').join('');
  const status=document.getElementById('status');
  if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'MODO DE TESTE · dados históricos de 2025';
 }
