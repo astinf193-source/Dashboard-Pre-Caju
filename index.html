@@ -507,7 +507,7 @@ async function loadTestData(){
  const status=document.getElementById('status');
  if(status)status.textContent='Carregando dados da planilha de teste...';
  try{
-  const url='https://docs.google.com/spreadsheets/d/e/2PACX-1vQYOAR1W1ydsgwLTeJ8Zu6ro183sdsYJfsQHDMEdF9BJ6E05XMW9XJU6z9ElO7DfcyMDTSJsB-hGvj1/pub?gid=2039429476&single=true&output=csv';
+  const url='https://docs.google.com/spreadsheets/d/1zMOKWqTekm9HLR_3oM9-cluo8BUJ7ODdWMHjFHsfrMo/export?format=csv';
   const response=await fetch(url,{cache:'no-store'});
   if(!response.ok)throw new Error('HTTP '+response.status);
   const csvText=await response.text();
