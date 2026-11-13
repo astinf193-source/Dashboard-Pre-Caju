@@ -470,7 +470,7 @@ function render(operational={}){
  }).join('');
  document.querySelectorAll('[data-severity]').forEach(b=>b.addEventListener('click',()=>setFilter('gravidade',b.dataset.severity)));
  document.getElementById('reportFilter').textContent=filterNames.length?'Filtros: '+filterNames.join(' · '):'Todas as ocorrências';
- document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><b>SETOR: '+esc(o.setor||'Não informado')+' · PONTO: '+esc(o.local||'Não informado')+'</b><span class="report-full"><b>TIPO:</b> '+esc(o.tipo||'Não informado')+' &nbsp; <b>GRAVIDADE:</b> '+esc(o.gravidadeOriginal||o.gravidade||'Não informada')+' &nbsp; <b>QUANTIDADE:</b> '+esc(o.quantidade||1)+'<br><b>RELATO:</b> '+esc(o.relato||'Relato não informado')+'</span></button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
+ document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><span class="report-full">'+esc(o.relato||'Relato não informado')+'</span></button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
  document.querySelectorAll('[data-report]').forEach(b=>b.addEventListener('click',()=>{
   const o=data[Number(b.dataset.report)];if(!o)return;
   filters.tipo=o.tipo||null;filters.local=o.local||null;filters.setor=o.setor||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
