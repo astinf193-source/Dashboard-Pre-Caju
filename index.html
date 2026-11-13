@@ -422,12 +422,12 @@ function activeData(){
  );
 }
 function setFilter(key,value){filters[key]=filters[key]===value?null:value;render();}
-function render(){
+function render(operational={}){
  const data=activeData();
- const filteredCount=data.length;
+ const filteredCount=data.reduce((sum,o)=>sum+(Number(o.quantidade)||1),0);
  const filterNames=[filters.tipo,filters.local,filters.gravidade,filters.data].filter(Boolean);
  document.getElementById('categories').innerHTML=categories.map(cat=>{
-  const n=data.filter(o=>norm(cat.name)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(cat.name)).length;
+  const n=data.filter(o=>norm(cat.name)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(cat.name)).reduce((sum,o)=>sum+(Number(o.quantidade)||1),0);
   return '<button type="button" class="cat '+(filters.tipo===cat.name?'active':'')+'" data-cat="'+esc(cat.name)+'"><span class="ico">'+cat.icon+'</span><strong><span>'+esc(cat.label||cat.name)+'</span><b>'+(occurrences.length?n:'—')+'</b></strong></button>';
  }).join('');
  document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>setFilter('tipo',b.dataset.cat)));
@@ -437,7 +437,7 @@ function render(){
  total.title='Clique para limpar todos os filtros';
  total.style.cursor='pointer';
  total.onclick=()=>{Object.keys(filters).forEach(k=>filters[k]=null);render();};
- const totals=categories.map(cat=>cat.name).map(name=>({name,n:data.filter(o=>norm(name)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(name)).length})).sort((x,y)=>y.n-x.n);
+ const totals=categories.map(cat=>cat.name).map(name=>({name,n:data.filter(o=>norm(name)==='prevenção'?isEventPrevention(o):norm(o.tipo)===norm(name)).reduce((sum,o)=>sum+(Number(o.quantidade)||1),0)})).sort((x,y)=>y.n-x.n);
  const major=totals[0];
  const majorEl=document.getElementById('majorType');
  majorEl.textContent=filteredCount&&major.n?major.name:'—';
@@ -449,11 +449,11 @@ function render(){
  document.getElementById('dateRows').innerHTML=dateKeys.length?dateKeys.map(key=>{
   const [year,month,day]=key.split('-');
   const label=new Date(Number(year),Number(month)-1,Number(day)).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-  const n=data.filter(o=>dateKey(o.data)===key).length;
+  const n=data.filter(o=>dateKey(o.data)===key).reduce((sum,o)=>sum+(Number(o.quantidade)||1),0);
   return '<button type="button" class="date-row '+(filters.data===key?'selected-filter':'')+'" data-date="'+key+'"><span>'+label+'</span><strong>'+n+'</strong></button>';
  }).join(''):'<div class="empty">Aguardando datas na planilha.</div>';
  document.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>setFilter('data',b.dataset.date)));
- const locs={};data.filter(o=>norm(o.tipo)!=='prevenção'&&norm(o.tipo)!=='prevenção ativa'&&norm(o.tipo)!=='prevenção reativa').forEach(o=>{const l=o.setor||'Setor não informado';locs[l]=(locs[l]||0)+1;});
+ const locs={};data.filter(o=>norm(o.tipo)!=='prevenção'&&norm(o.tipo)!=='prevenção ativa'&&norm(o.tipo)!=='prevenção reativa').forEach(o=>{const l=o.setor||'Setor não informado';locs[l]=(locs[l]||0)+(Number(o.quantidade)||1);});
  const locationEntries=Object.entries(locs).sort((x,y)=>y[1]-x[1]);
  const palette=['#7926a8','#bd1765','#ed168e','#f07816','#ffb000','#76b83f','#4c54c8','#159bb7','#d64b4b','#8c6d31'];
  let angle=0;const totalLocations=locationEntries.reduce((sum,item)=>sum+item[1],0);
@@ -465,20 +465,20 @@ function render(){
  document.querySelectorAll('[data-location]').forEach(b=>b.addEventListener('click',()=>setFilter('setor',b.dataset.location)));
  const levels=['Grave','Moderada','Leve'];
  document.getElementById('severity').innerHTML=levels.map(level=>{
-  const n=data.filter(o=>norm(o.gravidade)===norm(level)).length;
+  const n=data.filter(o=>norm(o.gravidade)===norm(level)).reduce((sum,o)=>sum+(Number(o.quantidade)||1),0);
   return '<button type="button" class="severity-row '+(filters.gravidade===level?'selected-filter':'')+'" data-severity="'+level+'"><span>'+level+'</span><strong>'+(occurrences.length?n:'—')+'</strong></button>';
  }).join('');
  document.querySelectorAll('[data-severity]').forEach(b=>b.addEventListener('click',()=>setFilter('gravidade',b.dataset.severity)));
  document.getElementById('reportFilter').textContent=filterNames.length?'Filtros: '+filterNames.join(' · '):'Todas as ocorrências';
- document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><b>'+esc(o.tipo)+' · '+esc(o.data||'Data não informada')+' · '+esc(o.local||'Local não informado')+' · '+esc(o.gravidade||'Gravidade não informada')+'</b><span class="report-full">'+esc(o.relato||'Relato não informado')+'</span></button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
+ document.getElementById('reports').innerHTML=data.length?data.map((o,i)=>'<button type="button" class="report-item" data-report="'+i+'"><b>SETOR: '+esc(o.setor||'Não informado')+' · PONTO: '+esc(o.local||'Não informado')+'</b><span class="report-full"><b>TIPO:</b> '+esc(o.tipo||'Não informado')+' &nbsp; <b>GRAVIDADE:</b> '+esc(o.gravidadeOriginal||o.gravidade||'Não informada')+' &nbsp; <b>QUANTIDADE:</b> '+esc(o.quantidade||1)+'<br><b>RELATO:</b> '+esc(o.relato||'Relato não informado')+'</span></button>').join(''):'<div class="empty">'+(occurrences.length?'Nenhuma ocorrência corresponde aos filtros selecionados.':'Os relatos aparecerão aqui após a integração da planilha.')+'</div>';
  document.querySelectorAll('[data-report]').forEach(b=>b.addEventListener('click',()=>{
   const o=data[Number(b.dataset.report)];if(!o)return;
   filters.tipo=o.tipo||null;filters.local=o.local||null;filters.setor=o.setor||null;filters.gravidade=o.gravidade||null;filters.data=o.data?dateKey(o.data):null;render();
  }));
- document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').length:'—';
-document.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').length:'—';
+ document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').reduce((s,o)=>s+(Number(o.quantidade)||1),0):'—';
+document.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').reduce((s,o)=>s+(Number(o.quantidade)||1),0):'—';
  const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
- document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>—</strong><span>'+name+'</span></div>').join('');
+ const resourceCounts={...operational.vehicleCounts,Militares:operational.checkinCount,Faltas:operational.absenceCount};\n document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>'+(resourceCounts[name]??'—')+'</strong><span>'+name+'</span></div>').join('');
  const status=document.getElementById('status');
  if(status) status.textContent=filterNames.length?'Filtros ativos · '+filterNames.join(' · '):'MODO DE TESTE · dados históricos de 2025';
 }
@@ -503,38 +503,64 @@ function safeReport(value){
  t=t.replace(/(Paciente|Vítima|Vitima)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+){1,5})/g,'$1 [IDENTIFICAÇÃO OMITIDA]');
  return t;
 }
+async async function fetchSheet(sheetName){
+ const id='1zMOKWqTekm9HLR_3oM9-cluo8BUJ7ODdWMHjFHsfrMo';
+ const url='https://docs.google.com/spreadsheets/d/'+id+'/gviz/tq?tqx=out:csv&sheet='+encodeURIComponent(sheetName);
+ const response=await fetch(url,{cache:'no-store'});
+ if(!response.ok)throw new Error('Falha ao ler a aba '+sheetName+' (HTTP '+response.status+')');
+ const csv=await response.text();
+ if(!csv.trim()||csv.trim().startsWith('<'))throw new Error('A aba '+sheetName+' não retornou CSV. Verifique o compartilhamento.');
+ const rows=parseCSV(csv);
+ const headers=(rows.shift()||[]).map(x=>x.replace(/^\\uFEFF/,'').trim());
+ return rows.filter(row=>row.some(v=>String(v||'').trim())).map(row=>{
+  const obj={};headers.forEach((h,i)=>obj[h]=String(row[i]??'').trim());return obj;
+ });
+}
+function field(row,...names){
+ const keys=Object.keys(row);const wanted=names.map(n=>norm(n));
+ const key=keys.find(k=>wanted.includes(norm(k)));
+ return key?String(row[key]??'').trim():'';
+}
+function isValidRecord(row){return Object.values(row).some(v=>String(v||'').trim());}
 async function loadTestData(){
  const status=document.getElementById('status');
- if(status)status.textContent='Carregando dados da planilha de teste...';
+ if(status)status.textContent='Carregando ocorrências e indicadores operacionais...';
  try{
-  const url='https://docs.google.com/spreadsheets/d/1zMOKWqTekm9HLR_3oM9-cluo8BUJ7ODdWMHjFHsfrMo/export?format=csv';
-  const response=await fetch(url,{cache:'no-store'});
-  if(!response.ok)throw new Error('HTTP '+response.status);
-  const csvText=await response.text();
-  if(!csvText.trim())throw new Error('A planilha retornou conteúdo vazio.');
-  const rows=parseCSV(csvText);
-  const headers=rows.shift().map(x=>x.replace(/^\\uFEFF/,'').trim());
-  const required=['TIPO DE RELATÓRIO:','TIPO DE OCORRÊNCIA:','PONTO DE REFERÊNCIA','SETORES','GRAVIDADE','Data do Serviço','RELATO DA OCORRÊNCIA'];
-  const missing=required.filter(h=>!headers.includes(h));
-  if(missing.length)throw new Error('Colunas ausentes no CSV: '+missing.join(', '));
-  const col=name=>headers.indexOf(name);
-  occurrences=rows.filter(r=>String(r[col('TIPO DE RELATÓRIO:')]||'').trim().toLocaleLowerCase('pt-BR')==='ocorrência').map(r=>({
-   tipo:String(r[col('TIPO DE OCORRÊNCIA:')]||'').trim(),
-   local:String(r[col('PONTO DE REFERÊNCIA')]||'').trim(),
-   setor:String(r[col('SETORES')]||'').trim(),
-   gravidade:({'Baixa':'Leve','Média':'Moderada','Media':'Moderada','Alta':'Grave'}[String(r[col('GRAVIDADE')]||'').trim()]||String(r[col('GRAVIDADE')]||'').trim()),
-   data:String(r[col('Data do Serviço')]||'').trim(),
-   relato:safeReport(r[col('RELATO DA OCORRÊNCIA')]||''),
-   classificacao:''
-  }));
+  const [occRows,vehicleRows,changeRows,checkinRows]=await Promise.all([
+   fetchSheet('Ocorrencias'),fetchSheet('Viaturas'),fetchSheet('Alteracoes Militares'),fetchSheet('Checkins')
+  ]);
+  occurrences=occRows.filter(isValidRecord).map(r=>{
+   const rawSeverity=field(r,'Gravidade');
+   return {
+    tipo:field(r,'Tipo'),
+    local:field(r,'Ponto de Referencia','Ponto de Referência'),
+    setor:field(r,'Setor'),
+    gravidade:({'Baixa':'Leve','Média':'Moderada','Media':'Moderada','Alta':'Grave'}[rawSeverity]||rawSeverity),
+    gravidadeOriginal:rawSeverity,
+    quantidade:Math.max(1,Number(String(field(r,'Quantidade')||'1').replace(',','.'))||1),
+    data:field(r,'Timestamp'),
+    relato:safeReport(field(r,'Relato')),
+    classificacao:''
+   };
+  }).filter(o=>o.tipo||o.local||o.setor||o.relato);
+  const vehicles=vehicleRows.filter(isValidRecord);
+  const changes=changeRows.filter(isValidRecord);
+  const checkins=checkinRows.filter(isValidRecord);
+  const vehicleCounts={Terrestre:0,Drone:0,'Aquática':0};
+  vehicles.forEach(r=>{
+   const type=norm(field(r,'Tipo'));
+   if(type.includes('terrest'))vehicleCounts.Terrestre++;
+   else if(type.includes('drone'))vehicleCounts.Drone++;
+   else if(type.includes('aqu'))vehicleCounts['Aquática']++;
+  });
+  const absenceCount=changes.filter(r=>norm(field(r,'Tipo')).includes('falta')).length;
+  const checkinCount=checkins.length;
   Object.keys(filters).forEach(k=>filters[k]=null);
-  render();
-  const status=document.getElementById('status');
-  if(status)status.textContent='MODO DE TESTE · dados históricos de 2025 · '+occurrences.length+' ocorrências';
+  render({vehicleCounts,absenceCount,checkinCount});
+  if(status)status.textContent='DADOS REAIS · '+occurrences.length+' registros de ocorrência · '+vehicles.length+' registros de viaturas · '+absenceCount+' faltas · '+checkinCount+' check-ins';
  }catch(error){
-  console.error('Falha ao carregar CSV de teste:',error);
-  const status=document.getElementById('status');
-  if(status)status.textContent='Não foi possível carregar a planilha CSV publicada.';
+  console.error('Falha ao carregar planilhas:',error);
+  if(status)status.textContent='Falha na integração: '+error.message;
   render();
  }
 }
