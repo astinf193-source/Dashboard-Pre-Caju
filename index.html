@@ -392,6 +392,8 @@ const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
 
 // A integração com a planilha será conectada posteriormente.
 let occurrences=[];
+let sheetLoadInProgress=false;
+let hasLoadedSheetData=false;
 const filters={tipo:null,local:null,setor:null,gravidade:null,data:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>String(v??'').trim().toLocaleLowerCase('pt-BR');
@@ -524,6 +526,8 @@ function field(row,...names){
 }
 function isValidRecord(row){return Object.values(row).some(v=>String(v||'').trim());}
 async function loadTestData(){
+ if(sheetLoadInProgress)return;
+ sheetLoadInProgress=true;
  const status=document.getElementById('status');
  if(status)status.textContent='Carregando ocorrências e indicadores operacionais...';
  try{
@@ -556,17 +560,22 @@ async function loadTestData(){
   });
   const absenceCount=changes.filter(r=>norm(field(r,'Tipo')).includes('falta')).length;
   const checkinCount=checkins.length;
-  Object.keys(filters).forEach(k=>filters[k]=null);
+  if(!hasLoadedSheetData)Object.keys(filters).forEach(k=>filters[k]=null);
   render({vehicleCounts,absenceCount,checkinCount});
-  if(status)status.textContent='DADOS REAIS · '+occurrences.length+' registros de ocorrência · '+vehicles.length+' registros de viaturas · '+absenceCount+' faltas · '+checkinCount+' check-ins';
+  hasLoadedSheetData=true;
+  if(status)status.textContent='DADOS REAIS · '+occurrences.length+' ocorrências · atualização automática a cada 30 segundos · '+new Date().toLocaleTimeString('pt-BR');
+  sheetLoadInProgress=false;
  }catch(error){
   console.error('Falha ao carregar planilhas:',error);
-  if(status)status.textContent='Falha na integração: '+error.message;
+  if(status)status.textContent='Falha na atualização automática: '+error.message;
   render();
+  sheetLoadInProgress=false;
  }
 }
 document.getElementById('refresh').addEventListener('click',loadTestData);
 loadTestData();
+setInterval(()=>{if(!document.hidden)loadTestData();},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadTestData();});
 })();
 </script>
 </body></html>
