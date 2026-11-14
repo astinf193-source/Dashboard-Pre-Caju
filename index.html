@@ -451,10 +451,14 @@ function render(operational={}){
  document.getElementById('dateRows').innerHTML=dateKeys.length?dateKeys.map(key=>{
   const [year,month,day]=key.split('-');
   const label=new Date(Number(year),Number(month)-1,Number(day)).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-  const n=data.filter(o=>dateKey(o.data)===key).reduce((sum,o)=>sum+(Number(o.quantidade)||1),0);
+  const n=occurrences.filter(o=>dateKey(o.data)===key).reduce((sum,o)=>sum+(Number(o.quantidade)||1),0);
   return '<button type="button" class="date-row '+(filters.data===key?'selected-filter':'')+'" data-date="'+key+'"><span>'+label+'</span><strong>'+n+'</strong></button>';
  }).join(''):'<div class="empty">Aguardando datas na planilha.</div>';
- document.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>setFilter('data',b.dataset.date)));
+ document.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>{
+  Object.keys(filters).forEach(k=>filters[k]=null);
+  filters.data=b.dataset.date;
+  render();
+ }));
  const locs={};data.filter(o=>norm(o.tipo)!=='prevenção'&&norm(o.tipo)!=='prevenção ativa'&&norm(o.tipo)!=='prevenção reativa').forEach(o=>{const l=o.setor||'Setor não informado';locs[l]=(locs[l]||0)+(Number(o.quantidade)||1);});
  const locationEntries=Object.entries(locs).sort((x,y)=>y[1]-x[1]);
  const palette=['#7926a8','#bd1765','#ed168e','#f07816','#ffb000','#76b83f','#4c54c8','#159bb7','#d64b4b','#8c6d31'];
