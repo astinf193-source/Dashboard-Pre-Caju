@@ -447,7 +447,7 @@ function render(operational={}){
  majorEl.title='Clique para filtrar pela ocorrência mais frequente';
  majorEl.onclick=()=>{if(filteredCount&&major.n)setFilter('tipo',major.name);};
  document.getElementById('majorCount').textContent=filteredCount&&major.n?major.n+' registro(s)':'Aguardando dados';
- const dateKeys=[...new Set(occurrences.map(o=>dateKey(o.data)).filter(Boolean))].sort();
+ const dateKeys=[...new Set(['2026-11-13','2026-11-14','2026-11-15',...occurrences.map(o=>dateKey(o.data)).filter(Boolean)])].sort();
  document.getElementById('dateRows').innerHTML=dateKeys.length?dateKeys.map(key=>{
   const [year,month,day]=key.split('-');
   const label=new Date(Number(year),Number(month)-1,Number(day)).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
