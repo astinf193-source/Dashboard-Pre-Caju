@@ -394,6 +394,7 @@ const resources=['Terrestre','Drone','Aquática','Militares','Faltas'];
 let occurrences=[];
 let sheetLoadInProgress=false;
 let hasLoadedSheetData=false;
+let operationalRows={vehicles:[],changes:[],checkins:[]};
 const filters={tipo:null,local:null,setor:null,gravidade:null,data:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>String(v??'').trim().toLocaleLowerCase('pt-BR');
@@ -495,7 +496,18 @@ function render(operational={}){
  document.getElementById('preventionActiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='ativa').reduce((s,o)=>s+(Number(o.quantidade)||1),0):'—';
 document.getElementById('preventionReactiveCount').textContent=occurrences.length?occurrences.filter(o=>preventionKind(o)==='reativa').reduce((s,o)=>s+(Number(o.quantidade)||1),0):'—';
  const resourceImages={'Terrestre':'imagens/terrestre.jpg','Drone':'imagens/drone.png','Aquática':'imagens/aquatico.jpeg','Militares':'imagens/militares.jpg','Faltas':'imagens/faltas.jpg'};
- const resourceCounts={...operational.vehicleCounts,Militares:operational.checkinCount,Faltas:operational.absenceCount};
+ const selectedOperationalRows=rows=>filters.data?rows.filter(r=>dateKey(field(r,'Timestamp'))===filters.data):rows;
+ const selectedVehicles=selectedOperationalRows(operationalRows.vehicles);
+ const selectedChanges=selectedOperationalRows(operationalRows.changes);
+ const selectedCheckins=selectedOperationalRows(operationalRows.checkins);
+ const vehicleCounts={Terrestre:0,Drone:0,'Aquática':0};
+ selectedVehicles.forEach(r=>{
+  const type=norm(field(r,'Tipo'));
+  if(type.includes('terrest'))vehicleCounts.Terrestre++;
+  else if(type.includes('drone'))vehicleCounts.Drone++;
+  else if(type.includes('aqu'))vehicleCounts['Aquática']++;
+ });
+ const resourceCounts={...vehicleCounts,Militares:selectedCheckins.length,Faltas:selectedChanges.filter(r=>norm(field(r,'Tipo')).includes('falta')).length};
  document.getElementById('resourceTypes').innerHTML=resources.map(name=>'<div class="resource" data-resource="'+name+'"><img src="'+resourceImages[name]+'" alt="'+name+'" loading="lazy"><strong>'+(resourceCounts[name]??'—')+'</strong><span>'+name+'</span></div>').join('');
  const status=document.getElementById('status');
  if(status) status.textContent=hasLoadedSheetData?(filterNames.length?'DADOS REAIS · Filtros ativos: '+filterNames.join(' · '):'DADOS REAIS · '+occurrences.length+' registros cadastrados · '+occurrences.reduce((s,o)=>s+(Number(o.quantidade)||1),0)+' ocorrências contabilizadas'):'Carregando dados da planilha oficial...';
@@ -563,16 +575,10 @@ async function loadTestData(){
     classificacao:''
    };
   }).filter(o=>o.tipo||o.local||o.setor||o.relato);
-  const vehicles=vehicleRows.filter(isValidRecord);
-  const changes=changeRows.filter(isValidRecord);
-  const checkins=checkinRows.filter(isValidRecord);
-  const vehicleCounts={Terrestre:0,Drone:0,'Aquática':0};
-  vehicles.forEach(r=>{
-   const type=norm(field(r,'Tipo'));
-   if(type.includes('terrest'))vehicleCounts.Terrestre++;
-   else if(type.includes('drone'))vehicleCounts.Drone++;
-   else if(type.includes('aqu'))vehicleCounts['Aquática']++;
-  });
+  operationalRows={vehicles:vehicleRows.filter(isValidRecord),changes:changeRows.filter(isValidRecord),checkins:checkinRows.filter(isValidRecord)};
+  const vehicles=operationalRows.vehicles;
+  const changes=operationalRows.changes;
+  const checkins=operationalRows.checkins;
   const absenceCount=changes.filter(r=>norm(field(r,'Tipo')).includes('falta')).length;
   const checkinCount=checkins.length;
   if(!hasLoadedSheetData)Object.keys(filters).forEach(k=>filters[k]=null);
