@@ -399,9 +399,24 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const norm=v=>String(v??'').trim().toLocaleLowerCase('pt-BR');
 function dateKey(v){
  const s=String(v??'').trim();
- if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
- const m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})(?:\s+.*)?$/);
- return m?m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'):s;
+ let year,month,day,timeMatch;
+ const iso=s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+ if(iso){
+  year=Number(iso[1]);month=Number(iso[2]);day=Number(iso[3]);
+  if(iso[4]!==undefined)timeMatch={hour:Number(iso[4]),minute:Number(iso[5]),second:Number(iso[6]||0)};
+ }else{
+  const local=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if(!local)return s;
+  day=Number(local[1]);month=Number(local[2]);year=Number(local[3]);
+  if(local[4]!==undefined)timeMatch={hour:Number(local[4]),minute:Number(local[5]),second:Number(local[6]||0)};
+ }
+ // O dia operacional encerra às 10h: registros até 10:00:00
+ // pertencem ao dia operacional anterior.
+ if(timeMatch&&(timeMatch.hour<10||(timeMatch.hour===10&&timeMatch.minute===0&&timeMatch.second===0))){
+  const previous=new Date(Date.UTC(year,month-1,day)-86400000);
+  year=previous.getUTCFullYear();month=previous.getUTCMonth()+1;day=previous.getUTCDate();
+ }
+ return year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
 }
 
 function preventionKind(o){
